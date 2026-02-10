@@ -11,89 +11,125 @@
             <!-- Welcome Card -->
             <div class="card card-custom mb-4">
                 <div class="card-body text-center">
-                    <h3>Welcome, {{ app.user.name }}!</h3>
+                    <h3>Welcome, {{ user.name }}! 🏆</h3>
                     <p class="lead">Track your nutrition and fitness journey</p>
                 </div>
             </div>
             
-            <!-- Nutrition Plans -->
+            <!-- Assigned Nutrition Plan -->
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card card-custom">
                         <div class="card-header" style="background-color: var(--primary-green); color: white;">
-                            <h5 class="mb-0">Available Nutrition Plans</h5>
+                            <h5 class="mb-0">My Assigned Nutrition Plan</h5>
                         </div>
                         <div class="card-body">
-                            {% if nutritionPlans|length > 0 %}
+                            {% if assignedPlan %}
                                 <div class="row">
-                                    {% for plan in nutritionPlans %}
-                                    <div class="col-md-4 mb-3">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <h5 class="card-title">{{ plan.name }}</h5>
-                                                <p class="card-text">{{ plan.description|slice(0, 100) }}...</p>
-                                                <div class="mb-2">
-                                                    <small class="text-muted">Duration: {{ plan.duration }} days</small>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <small class="text-muted">Coach: {{ plan.coach.name }}</small>
-                                                </div>
-                                                <a href="{{ path('app_athlete_nutrition_plan_view', {'id': plan.id}) }}" class="btn btn-primary-custom">View Details</a>
+                                    <div class="col-md-8">
+                                        <h4>{{ assignedPlan.name }}</h4>
+                                        <p>{{ assignedPlan.description }}</p>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <strong>Duration:</strong>
+                                                <p>{{ assignedPlan.duration }} days</p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <strong>Water Goal:</strong>
+                                                <p>{{ assignedPlan.dailyWaterIntake ? assignedPlan.dailyWaterIntake ~ 'L/day' : 'Not set' }}</p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <strong>Coach:</strong>
+                                                <p>{{ assignedPlan.coach.name }}</p>
                                             </div>
                                         </div>
                                     </div>
-                                    {% endfor %}
-                                </div>
-                                <div class="text-center mt-3">
-                                    <a href="{{ path('app_athlete_nutrition_plans') }}" class="btn btn-outline-primary-custom">View All Plans</a>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <h5>Today's Meals</h5>
+                                                <h2>{{ todaysMeals|length }}</h2>
+                                                <a href="{{ path('app_athlete_nutrition_plan_view', {'id': assignedPlan.id}) }}" class="btn btn-primary-custom btn-sm">View Full Plan</a>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             {% else %}
-                                <p class="text-center text-muted">No nutrition plans available yet.</p>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-utensils fa-3x mb-3" style="color: var(--primary-blue);"></i>
+                                    <h5>No Nutrition Plan Assigned</h5>
+                                    <p class="text-muted">Your coach hasn't assigned you a nutrition plan yet.</p>
+                                </div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Meals -->
-            <div class="row">
+            <!-- Today's Meals -->
+            {% if assignedPlan and todaysMeals|length > 0 %}
+            <div class="row mb-4">
                 <div class="col-12">
                     <div class="card card-custom">
                         <div class="card-header" style="background-color: var(--primary-green); color: white;">
-                            <h5 class="mb-0">Available Meals</h5>
+                            <h5 class="mb-0">Today's Meals</h5>
                         </div>
                         <div class="card-body">
-                            {% if meals|length > 0 %}
-                                <div class="row">
-                                    {% for meal in meals|slice(0, 6) %}
-                                    <div class="col-md-4 mb-3">
-                                        <div class="card h-100">
-                                            {% if meal.image %}
-                                            <img src="{{ asset('uploads/meals/' ~ meal.image) }}" class="card-img-top" alt="{{ meal.name }}" style="height: 150px; object-fit: cover;">
-                                            {% else %}
-                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
-                                                <span style="color: var(--primary-green);">No Image</span>
-                                            </div>
-                                            {% endif %}
-                                            <div class="card-body">
-                                                <h5 class="card-title">{{ meal.name }}</h5>
-                                                <p class="card-text">{{ meal.description|slice(0, 80) }}...</p>
-                                                <div class="mb-2">
-                                                    <span class="badge bg-primary">{{ meal.calories }} cal</span>
-                                                    {% if meal.protein %}<span class="badge bg-success ms-1">{{ meal.protein }}g protein</span>{% endif %}
-                                                </div>
-                                                <small class="text-muted">Coach: {{ meal.coach.name }}</small>
+                            <div class="row">
+                                {% for meal in todaysMeals %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        {% if meal.image %}
+                                        <img src="{{ asset('uploads/meals/' ~ meal.image) }}" class="card-img-top" alt="{{ meal.name }}" style="height: 150px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                            <span style="color: var(--primary-green);">No Image</span>
+                                        </div>
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ meal.name }}</h5>
+                                            <p class="card-text">{{ meal.description|slice(0, 80) }}...</p>
+                                            <div class="mb-2">
+                                                <span class="badge bg-primary">{{ meal.calories }} cal</span>
+                                                <span class="badge bg-info ms-1">{{ meal.mealTime|capitalize }}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    {% endfor %}
                                 </div>
-                                <div class="text-center mt-3">
-                                    <a href="{{ path('app_athlete_meals') }}" class="btn btn-outline-primary-custom">View All Meals</a>
-                                </div>
-                            {% else %}
-                                <p class="text-center text-muted">No meals available yet.</p>
-                            {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Quick Actions -->
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card card-custom text-center h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Nutrition Plans</h5>
+                            <p>View available nutrition plans</p>
+                            <a href="{{ path('app_athlete_nutrition_plans') }}" class="btn btn-primary-custom">Browse Plans</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card card-custom text-center h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Meals</h5>
+                            <p>Explore meal options</p>
+                            <a href="{{ path('app_athlete_meals') }}" class="btn btn-primary-custom">View Meals</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card card-custom text-center h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Competitions</h5>
+                            <p>Join competitions</p>
+                            <a href="{{ path('app_athlete_competitions') }}" class="btn btn-primary-custom">View Competitions</a>
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,110 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Assign Athletes - Coach Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4" style="color: var(--primary-green);">Assign Athletes to Nutrition Plans</h1>
+            
+            <!-- Assign Form -->
+            <div class="card card-custom mb-4">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">Assign Athlete to Plan</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="athlete" class="form-label">Select Athlete</label>
+                                <select class="form-control" id="athlete" name="athlete" required>
+                                    <option value="">Choose an athlete...</option>
+                                    {% for athlete in athletes %}
+                                        <option value="{{ athlete.id }}">{{ athlete.name }} ({{ athlete.email }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="plan" class="form-label">Select Nutrition Plan</label>
+                                <select class="form-control" id="plan" name="plan" required>
+                                    <option value="">Choose a plan...</option>
+                                    {% for plan in nutritionPlans %}
+                                        <option value="{{ plan.id }}">{{ plan.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary-custom">Assign Athlete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Current Assignments -->
+            <div class="card card-custom">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">Current Assignments</h5>
+                </div>
+                <div class="card-body">
+                    {% if nutritionPlans|length > 0 %}
+                        {% for plan in nutritionPlans %}
+                            {% if plan.athletes|length > 0 %}
+                                <div class="mb-4">
+                                    <h6>{{ plan.name }}</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Athlete Name</th>
+                                                    <th>Email</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for athlete in plan.athletes %}
+                                                <tr>
+                                                    <td>{{ athlete.name }}</td>
+                                                    <td>{{ athlete.email }}</td>
+                                                    <td>
+                                                        <a href="{{ path('app_coach_remove_athlete', {'athleteId': athlete.id, 'planId': plan.id}) }}" 
+                                                           class="btn btn-sm btn-outline-danger"
+                                                           onclick="return confirm('Are you sure you want to remove this athlete from the plan?')">
+                                                            Remove
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% set totalAssigned = 0 %}
+                        {% for plan in nutritionPlans %}
+                            {% set totalAssigned = totalAssigned + plan.athletes|length %}
+                        {% endfor %}
+                        
+                        {% if totalAssigned == 0 %}
+                            <p class="text-center text-muted">No athletes assigned to any plans yet.</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-center text-muted">You haven't created any nutrition plans yet.</p>
+                        <div class="text-center">
+                            <a href="{{ path('app_coach_nutrition_plan_new') }}" class="btn btn-primary-custom">Create Your First Nutrition Plan</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Back to Dashboard -->
+            <div class="mt-4">
+                <a href="{{ path('app_coach_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

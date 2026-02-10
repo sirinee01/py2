@@ -30,6 +30,11 @@ class NutritionPlanType extends AbstractType
             ->add('objective', TextareaType::class, [
                 'attr' => ['class' => 'form-control', 'rows' => 3, 'placeholder' => 'e.g., Lose weight, Gain muscle...'],
                 'label' => 'Objective'
+            ])
+            ->add('dailyWaterIntake', IntegerType::class, [
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Liters per day'],
+                'label' => 'Daily Water Intake (L)',
+                'required' => false
             ]);
     }
 
@@ -39,4 +44,4 @@ class NutritionPlanType extends AbstractType
             'data_class' => NutritionPlan::class,
         ]);
     }
-}
+}   

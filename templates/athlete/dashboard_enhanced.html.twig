@@ -1,0 +1,334 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Athlete Dashboard - Sports Management{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .water-tracker {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+    }
+    
+    .progress-water {
+        height: 30px;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+    }
+    
+    .progress-water-bar {
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        transition: width 0.6s ease;
+    }
+    
+    .meal-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+    
+    .meal-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .meal-time-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8em;
+    }
+    
+    .competition-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .day-tabs {
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .day-tab {
+        padding: 10px 20px;
+        border: none;
+        background: none;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .day-tab.active {
+        color: var(--primary-green);
+        border-bottom: 3px solid var(--primary-green);
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card card-custom">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 style="color: var(--primary-green);">Welcome, {{ app.user.name }}! 🏆</h2>
+                            <p class="lead mb-0">Track your nutrition, training, and competitions in one place.</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="role-badge" style="font-size: 1.2em;">{{ app.user.roleType|capitalize }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stats-card text-center">
+                <h5>Today's Calories</h5>
+                <h2 style="color: var(--primary-green);">1,850</h2>
+                <small class="text-muted">Goal: 2,200</small>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card text-center">
+                <h5>Water Intake</h5>
+                <h2 style="color: var(--primary-green);">2.5L</h2>
+                <small class="text-muted">Goal: {{ user.assignedNutritionPlan ? user.assignedNutritionPlan.dailyWaterIntake : '3' }}L</small>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card text-center">
+                <h5>Active Competitions</h5>
+                <h2 style="color: var(--primary-green);">{{ active_competitions|length }}</h2>
+                <small class="text-muted">Participating</small>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card text-center">
+                <h5>Training Days</h5>
+                <h2 style="color: var(--primary-green);">5/7</h2>
+                <small class="text-muted">This Week</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Left Column: Nutrition -->
+        <div class="col-lg-8">
+            <!-- Water Tracker -->
+            <div class="card card-custom mb-4">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">💧 Daily Water Intake</h5>
+                </div>
+                <div class="card-body">
+                    <div class="water-tracker mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h3>2.5 / {{ user.assignedNutritionPlan ? user.assignedNutritionPlan.dailyWaterIntake : '3' }}L</h3>
+                                <p>Daily Water Goal</p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="progress-water">
+                                    <div class="progress-water-bar" style="width: 83%;"></div>
+                                </div>
+                                <div class="mt-2 text-center">
+                                    <button class="btn btn-light btn-sm me-2">+ 250ml</button>
+                                    <button class="btn btn-light btn-sm">+ 500ml</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Meals -->
+            <div class="card card-custom mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">🍽️ Today's Nutrition Plan</h5>
+                    <span class="badge bg-light text-dark">{{ "now"|date('l') }}</span>
+                </div>
+                <div class="card-body">
+                    {% if user.assignedNutritionPlan %}
+                        <div class="day-tabs mb-4">
+                            <button class="day-tab active">Mon</button>
+                            <button class="day-tab">Tue</button>
+                            <button class="day-tab">Wed</button>
+                            <button class="day-tab">Thu</button>
+                            <button class="day-tab">Fri</button>
+                            <button class="day-tab">Sat</button>
+                            <button class="day-tab">Sun</button>
+                        </div>
+                        
+                        {% set today_meals = user.assignedNutritionPlan.meals|filter(meal => meal.dayOfWeek == "now"|date('N')) %}
+                        
+                        {% if today_meals|length > 0 %}
+                            <div class="row">
+                                {% for meal in today_meals %}
+                                <div class="col-md-6 mb-3">
+                                    <div classcard meal-card">
+                                        <div class="card-body position-relative">
+                                            <span class="meal-time-badge" style="background: {% if meal.mealTime == 'breakfast' %}#FFD700{% elseif meal.mealTime == 'lunch' %}#32CD32{% else %}#6495ED{% endif %}; color: white;">
+                                                {{ meal.mealTime|capitalize }}
+                                            </span>
+                                            <h5 class="card-title">{{ meal.name }}</h5>
+                                            <p class="card-text">{{ meal.description }}</p>
+                                            <div class="meal-stats">
+                                                <span class="badge bg-primary">{{ meal.calories }} cal</span>
+                                                {% if meal.protein %}<span class="badge bg-success ms-1">{{ meal.protein }}g protein</span>{% endif %}
+                                                {% if meal.carbs %}<span class="badge bg-warning ms-1">{{ meal.carbs }}g carbs</span>{% endif %}
+                                                {% if meal.fat %}<span class="badge bg-danger ms-1">{{ meal.fat }}g fat</span>{% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-center text-muted">No meals scheduled for today.</p>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-utensils fa-3x mb-3" style="color: var(--primary-blue);"></i>
+                            <h5>No Nutrition Plan Assigned</h5>
+                            <p class="text-muted">Ask your coach to assign you a nutrition plan.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Competitions & Quick Actions -->
+        <div class="col-lg-4">
+            <!-- My Competitions -->
+            <div class="card card-custom mb-4">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">🏆 My Competitions</h5>
+                </div>
+                <div class="card-body">
+                    {% if my_competitions|length > 0 %}
+                        {% for competition in my_competitions|slice(0, 3) %}
+                        <div class="competition-card mb-3">
+                            <div class="p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="mb-0">{{ competition.name }}</h6>
+                                    <span class="badge {% if competition.status == 'upcoming' %}bg-warning{% elseif competition.status == 'ongoing' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ competition.status|capitalize }}
+                                    </span>
+                                </div>
+                                <p class="small text-muted mb-2">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ competition.startDate|date('M d') }} - {{ competition.endDate|date('M d, Y') }}
+                                </p>
+                                <p class="small text-muted mb-3">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    {{ competition.location }}
+                                </p>
+                                <a href="{{ path('app_athlete_competition_view', {'id': competition.id}) }}" class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if my_competitions|length > 3 %}
+                        <div class="text-center mt-3">
+                            <a href="{{ path('app_athlete_my_competitions') }}" class="btn btn-sm btn-outline-primary-custom">View All Competitions</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-trophy fa-2x mb-3" style="color: var(--primary-blue);"></i>
+                            <p class="text-muted">You're not participating in any competitions yet.</p>
+                            <a href="{{ path('app_athlete_competitions') }}" class="btn btn-primary-custom btn-sm">Browse Competitions</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card card-custom">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">⚡ Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('app_athlete_competitions') }}" class="btn btn-outline-primary-custom">
+                            <i class="fas fa-search me-2"></i> Find Competitions
+                        </a>
+                        <a href="{{ path('app_athlete_nutrition_plans') }}" class="btn btn-outline-primary-custom">
+                            <i class="fas fa-utensils me-2"></i> View Nutrition Plans
+                        </a>
+                        <a href="{{ path('app_athlete_meals') }}" class="btn btn-outline-primary-custom">
+                            <i class="fas fa-apple-alt me-2"></i> Browse Meals
+                        </a>
+                        <button class="btn btn-outline-primary-custom" data-bs-toggle="modal" data-bs-target="#waterModal">
+                            <i class="fas fa-tint me-2"></i> Log Water Intake
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="card card-custom mt-4">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">📅 Upcoming Events</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for event in upcoming_events %}
+                        <div class="list-group-item border-0 px-0 py-2">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ event.name }}</h6>
+                                <small class="text-muted">{{ event.date|date('M d') }}</small>
+                            </div>
+                            <p class="mb-1 small text-muted">{{ event.description }}</p>
+                        </div>
+                        {% else %}
+                        <p class="text-center text-muted py-3">No upcoming events</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Water Modal -->
+<div class="modal fade" id="waterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Log Water Intake</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>How much water did you drink?</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary">250 ml</button>
+                    <button class="btn btn-outline-primary">500 ml</button>
+                    <button class="btn btn-outline-primary">1 Liter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

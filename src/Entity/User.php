@@ -47,17 +47,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
+    // Nutrition plans created by this coach
     #[ORM\OneToMany(mappedBy: 'coach', targetEntity: NutritionPlan::class)]
     private Collection $nutritionPlans;
 
+    // Meals created by this coach
     #[ORM\OneToMany(mappedBy: 'coach', targetEntity: Meal::class)]
     private Collection $meals;
+
+    // Competitions organized by this user (if admin)
+    #[ORM\OneToMany(mappedBy: 'organizer', targetEntity: Competition::class)]
+    private Collection $organizedCompetitions;
+
+    // Competition applications by this user (if athlete)
+    #[ORM\OneToMany(mappedBy: 'athlete', targetEntity: CompetitionApplication::class)]
+    private Collection $competitionApplications;
+
+    // Nutrition plan assigned to this user (if athlete)
+    #[ORM\ManyToOne(targetEntity: NutritionPlan::class, inversedBy: 'athletes')]
+    private ?NutritionPlan $assignedNutritionPlan = null;
+
+    // Water intake tracking (for athletes)
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private array $waterIntake = [];
 
     public function __construct()
     {
         $this->createdAt = new \DateTime();
         $this->nutritionPlans = new ArrayCollection();
         $this->meals = new ArrayCollection();
+        $this->organizedCompetitions = new ArrayCollection();
+        $this->competitionApplications = new ArrayCollection();
+        $this->waterIntake = [];
     }
 
     public function getId(): ?int
@@ -227,5 +248,120 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Competition>
+     */
+    public function getOrganizedCompetitions(): Collection
+    {
+        return $this->organizedCompetitions;
+    }
+
+    public function addOrganizedCompetition(Competition $organizedCompetition): static
+    {
+        if (!$this->organizedCompetitions->contains($organizedCompetition)) {
+            $this->organizedCompetitions->add($organizedCompetition);
+            $organizedCompetition->setOrganizer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrganizedCompetition(Competition $organizedCompetition): static
+    {
+        if ($this->organizedCompetitions->removeElement($organizedCompetition)) {
+            // set the owning side to null (unless already changed)
+            if ($organizedCompetition->getOrganizer() === $this) {
+                $organizedCompetition->setOrganizer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CompetitionApplication>
+     */
+    public function getCompetitionApplications(): Collection
+    {
+        return $this->competitionApplications;
+    }
+
+    public function addCompetitionApplication(CompetitionApplication $competitionApplication): static
+    {
+        if (!$this->competitionApplications->contains($competitionApplication)) {
+            $this->competitionApplications->add($competitionApplication);
+            $competitionApplication->setAthlete($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompetitionApplication(CompetitionApplication $competitionApplication): static
+    {
+        if ($this->competitionApplications->removeElement($competitionApplication)) {
+            // set the owning side to null (unless already changed)
+            if ($competitionApplication->getAthlete() === $this) {
+                $competitionApplication->setAthlete(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getAssignedNutritionPlan(): ?NutritionPlan
+    {
+        return $this->assignedNutritionPlan;
+    }
+
+    public function setAssignedNutritionPlan(?NutritionPlan $assignedNutritionPlan): static
+    {
+        $this->assignedNutritionPlan = $assignedNutritionPlan;
+
+        return $this;
+    }
+
+    public function getWaterIntake(): array
+    {
+        return $this->waterIntake;
+    }
+
+    public function setWaterIntake(array $waterIntake): static
+    {
+        $this->waterIntake = $waterIntake;
+
+        return $this;
+    }
+
+    public function addWaterIntake(float $amount, \DateTimeInterface $date = null): static
+    {
+        $dateKey = ($date ?? new \DateTime())->format('Y-m-d');
+        
+        if (!isset($this->waterIntake[$dateKey])) {
+            $this->waterIntake[$dateKey] = 0;
+        }
+        
+        $this->waterIntake[$dateKey] += $amount;
+        
+        return $this;
+    }
+
+    public function getTodaysWaterIntake(): float
+    {
+        $today = (new \DateTime())->format('Y-m-d');
+        return $this->waterIntake[$today] ?? 0;
+    }
+
+    // Helper method to get approved competitions
+    public function getApprovedCompetitions(): array
+    {
+        $approved = [];
+        foreach ($this->competitionApplications as $app) {
+            if ($app->getStatus() === 'approved') {
+                $approved[] = $app->getCompetition();
+            }
+        }
+        return $approved;
     }
 }

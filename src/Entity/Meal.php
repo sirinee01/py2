@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MealRepository::class)]
 class Meal
@@ -17,21 +18,28 @@ class Meal
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?int $calories = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
     private ?int $protein = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
     private ?int $carbs = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
     private ?int $fat = null;
 
     #[ORM\Column(length: 500, nullable: true)]
@@ -40,10 +48,22 @@ class Meal
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'meals')]
+    // Meal time (breakfast, lunch, dinner, snack)
+    #[ORM\Column(length: 50)]
+    #[Assert\Choice(['breakfast', 'lunch', 'dinner', 'snack'])]
+    private ?string $mealTime = 'lunch';
+
+    // Day of week (1-7 for Monday-Sunday)
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 1, max: 7)]
+    private ?int $dayOfWeek = null;
+
+    // Relationship with User (coach)
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'meals')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $coach = null;
 
+    // Relationship with NutritionPlan (ManyToMany)
     #[ORM\ManyToMany(targetEntity: NutritionPlan::class, mappedBy: 'meals')]
     private Collection $nutritionPlans;
 
@@ -154,6 +174,30 @@ class Meal
         return $this;
     }
 
+    public function getMealTime(): ?string
+    {
+        return $this->mealTime;
+    }
+
+    public function setMealTime(string $mealTime): static
+    {
+        $this->mealTime = $mealTime;
+
+        return $this;
+    }
+
+    public function getDayOfWeek(): ?int
+    {
+        return $this->dayOfWeek;
+    }
+
+    public function setDayOfWeek(?int $dayOfWeek): static
+    {
+        $this->dayOfWeek = $dayOfWeek;
+
+        return $this;
+    }
+
     public function getCoach(): ?User
     {
         return $this->coach;
@@ -191,5 +235,21 @@ class Meal
         }
 
         return $this;
+    }
+
+    // Helper method to get day name
+    public function getDayName(): string
+    {
+        $days = [
+            1 => 'Monday',
+            2 => 'Tuesday', 
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+            7 => 'Sunday'
+        ];
+        
+        return $days[$this->dayOfWeek] ?? 'Not specified';
     }
 }

@@ -42,3 +42,5 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: PUBLIC_ACCESS }
+        - { path: ^/admin/competition, roles: ROLE_ADMIN }
+        - { path: ^/athlete/competition, roles: ROLE_ATHLETE }

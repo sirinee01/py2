@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: NutritionPlanRepository::class)]
 class NutritionPlan
@@ -17,31 +18,48 @@ class NutritionPlan
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?int $duration = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank]
     private ?string $objective = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'nutritionPlans')]
+    // Daily water intake in liters
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
+    private ?int $dailyWaterIntake = null;
+
+    // Relationship with User (coach)
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'nutritionPlans')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $coach = null;
 
+    // Relationship with Meal (ManyToMany)
     #[ORM\ManyToMany(targetEntity: Meal::class, inversedBy: 'nutritionPlans')]
     private Collection $meals;
+
+    // Relationship with User (athletes) - ManyToMany
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'assignedNutritionPlan')]
+    private Collection $athletes;
 
     public function __construct()
     {
         $this->createdAt = new \DateTime();
         $this->meals = new ArrayCollection();
+        $this->athletes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -109,6 +127,18 @@ class NutritionPlan
         return $this;
     }
 
+    public function getDailyWaterIntake(): ?int
+    {
+        return $this->dailyWaterIntake;
+    }
+
+    public function setDailyWaterIntake(?int $dailyWaterIntake): static
+    {
+        $this->dailyWaterIntake = $dailyWaterIntake;
+
+        return $this;
+    }
+
     public function getCoach(): ?User
     {
         return $this->coach;
@@ -133,6 +163,7 @@ class NutritionPlan
     {
         if (!$this->meals->contains($meal)) {
             $this->meals->add($meal);
+            $meal->addNutritionPlan($this);
         }
 
         return $this;
@@ -140,8 +171,55 @@ class NutritionPlan
 
     public function removeMeal(Meal $meal): static
     {
-        $this->meals->removeElement($meal);
+        if ($this->meals->removeElement($meal)) {
+            $meal->removeNutritionPlan($this);
+        }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getAthletes(): Collection
+    {
+        return $this->athletes;
+    }
+
+    public function addAthlete(User $athlete): static
+    {
+        if (!$this->athletes->contains($athlete)) {
+            $this->athletes->add($athlete);
+            $athlete->setAssignedNutritionPlan($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAthlete(User $athlete): static
+    {
+        if ($this->athletes->removeElement($athlete)) {
+            // set the owning side to null (unless already changed)
+            if ($athlete->getAssignedNutritionPlan() === $this) {
+                $athlete->setAssignedNutritionPlan(null);
+            }
+        }
+
+        return $this;
+    }
+
+    // Helper method to get today's meals
+    public function getTodaysMeals(): Collection
+    {
+        $today = date('N'); // 1 (Monday) through 7 (Sunday)
+        $todaysMeals = new ArrayCollection();
+        
+        foreach ($this->meals as $meal) {
+            if ($meal->getDayOfWeek() == $today) {
+                $todaysMeals->add($meal);
+            }
+        }
+        
+        return $todaysMeals;
     }
 }

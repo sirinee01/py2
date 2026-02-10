@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ competition.name }} - Applications{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('app_admin_competitions') }}">Competitions</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {{ competition.name }} - Applications
+                    </li>
+                </ol>
+            </nav>
+
+            <div class="card card-custom mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h2 class="h4">{{ competition.name }}</h2>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-calendar"></i> 
+                                {{ competition.startDate|date('F d, Y H:i') }} - {{ competition.endDate|date('F d, Y H:i') }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-map-marker-alt"></i> {{ competition.location }}
+                            </p>
+                            <p class="mb-0">
+                                <i class="fas fa-users"></i> 
+                                {{ applications|length }} applications / {{ competition.maxParticipants }} max
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <span class="badge {% if competition.status == 'upcoming' %}bg-warning{% elseif competition.status == 'ongoing' %}bg-success{% else %}bg-secondary{% endif %} fs-6">
+                                {{ competition.status|capitalize }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-custom">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Applications</h3>
+                </div>
+                <div class="card-body">
+                    {% if applications is empty %}
+                        <div class="alert alert-info">
+                            No applications yet for this competition.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Athlete</th>
+                                        <th>Application Date</th>
+                                        <th>Status</th>
+                                        <th>Notes</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for application in applications %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ application.athlete.name }}</strong><br>
+                                            <small class="text-muted">{{ application.athlete.email }}</small>
+                                        </td>
+                                        <td>
+                                            {{ application.appliedAt|date('M d, Y H:i') }}
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if application.status == 'pending' %}bg-warning{% elseif application.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ application.status|capitalize }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if application.notes %}
+                                                {{ application.notes }}
+                                            {% else %}
+                                                <span class="text-muted">No notes</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if application.status == 'pending' %}
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ path('app_admin_application_approve', {'id': application.id}) }}" 
+                                                       class="btn btn-success"
+                                                       onclick="return confirm('Are you sure you want to approve this application?')">
+                                                        <i class="fas fa-check"></i> Approve
+                                                    </a>
+                                                    <a href="{{ path('app_admin_application_reject', {'id': application.id}) }}" 
+                                                       class="btn btn-danger"
+                                                       onclick="return confirm('Are you sure you want to reject this application?')">
+                                                        <i class="fas fa-times"></i> Reject
+                                                    </a>
+                                                </div>
+                                            {% elseif application.status == 'approved' %}
+                                                <span class="text-success">
+                                                    <i class="fas fa-check-circle"></i> Approved on {{ application.approvedAt|date('M d, Y') }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-danger">
+                                                    <i class="fas fa-times-circle"></i> Rejected on {{ application.rejectedAt|date('M d, Y') }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

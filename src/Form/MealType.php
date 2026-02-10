@@ -6,6 +6,7 @@ use App\Entity\Meal;
 use App\Entity\NutritionPlan;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -71,6 +72,31 @@ class MealType extends AbstractType
                 'attr' => ['class' => 'form-select'],
                 'label' => 'Assign to Nutrition Plans',
                 'required' => false
+            ])
+            ->add('mealTime', ChoiceType::class, [
+                'choices' => [
+                    'Breakfast' => 'breakfast',
+                    'Lunch' => 'lunch',
+                    'Dinner' => 'dinner',
+                    'Snack' => 'snack'
+                ],
+                'attr' => ['class' => 'form-control'],
+                'label' => 'Meal Time'
+            ])
+            ->add('dayOfWeek', ChoiceType::class, [
+                'choices' => [
+                    'Monday' => 1,
+                    'Tuesday' => 2,
+                    'Wednesday' => 3,
+                    'Thursday' => 4,
+                    'Friday' => 5,
+                    'Saturday' => 6,
+                    'Sunday' => 7
+                ],
+                'attr' => ['class' => 'form-control'],
+                'label' => 'Day of Week',
+                'required' => false,
+                'placeholder' => 'Select day (optional)'
             ]);
     }
 

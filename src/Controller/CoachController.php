@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Meal;
 use App\Entity\NutritionPlan;
+use App\Entity\User;
 use App\Form\MealType;
 use App\Form\NutritionPlanType;
 use App\Repository\MealRepository;
@@ -19,7 +20,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class CoachController extends AbstractController
 {
     #[Route('/coach/dashboard', name: 'app_coach_dashboard')]
-    public function dashboard(NutritionPlanRepository $nutritionPlanRepo, MealRepository $mealRepo): Response
+    public function dashboard(NutritionPlanRepository $nutritionPlanRepo, MealRepository $mealRepo, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('ROLE_COACH');
         
@@ -27,9 +28,79 @@ class CoachController extends AbstractController
         $nutritionPlans = $nutritionPlanRepo->findBy(['coach' => $coach]);
         $meals = $mealRepo->findBy(['coach' => $coach]);
         
+        // Get athletes count
+        $athletes = $entityManager->getRepository(User::class)
+            ->findBy(['roleType' => 'athlete']);
+        
         return $this->render('coach/dashboard.html.twig', [
             'nutritionPlans' => $nutritionPlans,
             'meals' => $meals,
+            'athletes' => $athletes,
+        ]);
+    }
+
+    #[Route('/coach/athletes', name: 'app_coach_athletes')]
+    public function athletesList(EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COACH');
+        
+        // Get all athletes
+        $athletes = $entityManager->getRepository(User::class)
+            ->findBy(['roleType' => 'athlete']);
+        
+        // Get coach's nutrition plans
+        $nutritionPlans = $entityManager->getRepository(NutritionPlan::class)
+            ->findBy(['coach' => $this->getUser()]);
+        
+        return $this->render('coach/athletes_list.html.twig', [
+            'athletes' => $athletes,
+            'nutritionPlans' => $nutritionPlans,
+        ]);
+    }
+
+    #[Route('/coach/athlete/{id}/assign-plan', name: 'app_coach_athlete_assign_plan')]
+    public function assignPlanToAthlete(Request $request, User $athlete, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COACH');
+        
+        // Verify this is an athlete
+        if ($athlete->getRoleType() !== 'athlete') {
+            $this->addFlash('error', 'You can only assign plans to athletes.');
+            return $this->redirectToRoute('app_coach_athletes');
+        }
+        
+        // Get coach's nutrition plans
+        $coach = $this->getUser();
+        $nutritionPlans = $entityManager->getRepository(NutritionPlan::class)
+            ->findBy(['coach' => $coach]);
+        
+        if ($request->isMethod('POST')) {
+            $planId = $request->request->get('plan');
+            
+            if ($planId === 'none') {
+                // Remove current plan
+                $athlete->setAssignedNutritionPlan(null);
+                $this->addFlash('success', 'Nutrition plan removed from athlete successfully!');
+            } else {
+                $plan = $entityManager->getRepository(NutritionPlan::class)->find($planId);
+                
+                if ($plan && $plan->getCoach() === $coach) {
+                    $athlete->setAssignedNutritionPlan($plan);
+                    $this->addFlash('success', 'Nutrition plan assigned to athlete successfully!');
+                } else {
+                    $this->addFlash('error', 'Invalid nutrition plan selected.');
+                    return $this->redirectToRoute('app_coach_athlete_assign_plan', ['id' => $athlete->getId()]);
+                }
+            }
+            
+            $entityManager->flush();
+            return $this->redirectToRoute('app_coach_athletes');
+        }
+        
+        return $this->render('coach/assign_plan_to_athlete.html.twig', [
+            'athlete' => $athlete,
+            'nutritionPlans' => $nutritionPlans,
+            'currentPlan' => $athlete->getAssignedNutritionPlan(),
         ]);
     }
 
@@ -195,55 +266,56 @@ class CoachController extends AbstractController
             'nutritionPlan' => $nutritionPlan,
         ]);
     }
-    #[Route('/coach/nutrition-plan/{id}/delete', name: 'app_coach_nutrition_plan_delete')]
-public function deleteNutritionPlan(Request $request, NutritionPlan $nutritionPlan, EntityManagerInterface $entityManager): Response
-{
-    $this->denyAccessUnlessGranted('ROLE_COACH');
-    
-    // Check if the coach owns this nutrition plan
-    if ($nutritionPlan->getCoach() !== $this->getUser()) {
-        throw $this->createAccessDeniedException('You cannot delete this nutrition plan.');
-    }
-    
-    if ($this->isCsrfTokenValid('delete'.$nutritionPlan->getId(), $request->request->get('_token'))) {
-        $entityManager->remove($nutritionPlan);
-        $entityManager->flush();
-        
-        $this->addFlash('success', 'Nutrition plan deleted successfully!');
-    } else {
-        $this->addFlash('error', 'Invalid CSRF token.');
-    }
-    
-    return $this->redirectToRoute('app_coach_dashboard');
-}
 
-#[Route('/coach/meal/{id}/delete', name: 'app_coach_meal_delete')]
-public function deleteMeal(Request $request, Meal $meal, EntityManagerInterface $entityManager): Response
-{
-    $this->denyAccessUnlessGranted('ROLE_COACH');
-    
-    // Check if the coach owns this meal
-    if ($meal->getCoach() !== $this->getUser()) {
-        throw $this->createAccessDeniedException('You cannot delete this meal.');
-    }
-    
-    if ($this->isCsrfTokenValid('delete'.$meal->getId(), $request->request->get('_token'))) {
-        // Delete image file if exists
-        if ($meal->getImage()) {
-            $imagePath = $this->getParameter('meals_directory').'/'.$meal->getImage();
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
-            }
+    #[Route('/coach/nutrition-plan/{id}/delete', name: 'app_coach_nutrition_plan_delete')]
+    public function deleteNutritionPlan(Request $request, NutritionPlan $nutritionPlan, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COACH');
+        
+        // Check if the coach owns this nutrition plan
+        if ($nutritionPlan->getCoach() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('You cannot delete this nutrition plan.');
         }
         
-        $entityManager->remove($meal);
-        $entityManager->flush();
+        if ($this->isCsrfTokenValid('delete'.$nutritionPlan->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($nutritionPlan);
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'Nutrition plan deleted successfully!');
+        } else {
+            $this->addFlash('error', 'Invalid CSRF token.');
+        }
         
-        $this->addFlash('success', 'Meal deleted successfully!');
-    } else {
-        $this->addFlash('error', 'Invalid CSRF token.');
+        return $this->redirectToRoute('app_coach_dashboard');
     }
-    
-    return $this->redirectToRoute('app_coach_dashboard');
-}
+
+    #[Route('/coach/meal/{id}/delete', name: 'app_coach_meal_delete')]
+    public function deleteMeal(Request $request, Meal $meal, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COACH');
+        
+        // Check if the coach owns this meal
+        if ($meal->getCoach() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('You cannot delete this meal.');
+        }
+        
+        if ($this->isCsrfTokenValid('delete'.$meal->getId(), $request->request->get('_token'))) {
+            // Delete image file if exists
+            if ($meal->getImage()) {
+                $imagePath = $this->getParameter('meals_directory').'/'.$meal->getImage();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+            
+            $entityManager->remove($meal);
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'Meal deleted successfully!');
+        } else {
+            $this->addFlash('error', 'Invalid CSRF token.');
+        }
+        
+        return $this->redirectToRoute('app_coach_dashboard');
+    }
 }

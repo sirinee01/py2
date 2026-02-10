@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Repository\NutritionPlanRepository;
 use App\Repository\MealRepository;
+use App\Repository\CompetitionRepository;
+use App\Repository\CompetitionApplicationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,14 +17,18 @@ class AthleteController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ATHLETE');
         
-        // For now, show all nutrition plans and meals
-        // Later you can assign specific plans to athletes
-        $nutritionPlans = $nutritionPlanRepo->findAll();
-        $meals = $mealRepo->findAll();
+        $user = $this->getUser();
+        
+        // Get assigned nutrition plan
+        $assignedPlan = $user->getAssignedNutritionPlan();
+        
+        // Get today's meals from assigned plan
+        $todaysMeals = $assignedPlan ? $assignedPlan->getTodaysMeals() : [];
         
         return $this->render('athlete/dashboard.html.twig', [
-            'nutritionPlans' => $nutritionPlans,
-            'meals' => $meals,
+            'user' => $user,
+            'assignedPlan' => $assignedPlan,
+            'todaysMeals' => $todaysMeals,
         ]);
     }
 

@@ -32,8 +32,8 @@
                     <div class="card card-custom text-center">
                         <div class="card-body">
                             <h5 class="card-title">My Athletes</h5>
-                            <h2 style="color: var(--primary-green);">0</h2>
-                            <button class="btn btn-outline-primary-custom mt-2" disabled>Manage Athletes</button>
+                            <h2 style="color: var(--primary-green);">{{ athletes|length }}</h2>
+                            <a href="{{ path('app_coach_athletes') }}" class="btn btn-primary-custom mt-2">Manage Athletes</a>
                         </div>
                     </div>
                 </div>

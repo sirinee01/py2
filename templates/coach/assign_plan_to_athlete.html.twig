@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Assign Plan to {{ athlete.name }} - Coach Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Athlete Info -->
+            <div class="card card-custom mb-4">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">Assign Nutrition Plan to {{ athlete.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Athlete:</strong> {{ athlete.name }}</p>
+                            <p><strong>Email:</strong> {{ athlete.email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Current Plan:</strong> 
+                                {% if currentPlan %}
+                                    <span class="badge bg-success">{{ currentPlan.name }}</span>
+                                {% else %}
+                                    <span class="badge bg-warning">No Plan Assigned</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Member Since:</strong> {{ athlete.createdAt|date('Y-m-d') }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Assign Plan Form -->
+                    <form method="post">
+                        <div class="mb-4">
+                            <label for="plan" class="form-label"><strong>Select Nutrition Plan</strong></label>
+                            <select class="form-control" id="plan" name="plan" required>
+                                <option value="none">-- No Plan (Remove Current) --</option>
+                                {% for plan in nutritionPlans %}
+                                    <option value="{{ plan.id }}" {% if currentPlan and currentPlan.id == plan.id %}selected{% endif %}>
+                                        {{ plan.name }} ({{ plan.duration }} days)
+                                        {% if plan.dailyWaterIntake %}
+                                            - {{ plan.dailyWaterIntake }}L/day
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Select "No Plan" to remove current assignment</small>
+                        </div>
+                        
+                        <!-- Plan Preview -->
+                        {% if currentPlan %}
+                        <div class="alert alert-info mb-4">
+                            <h6>Current Plan Details:</h6>
+                            <p><strong>{{ currentPlan.name }}</strong></p>
+                            <p>{{ currentPlan.description }}</p>
+                            <p><small>Duration: {{ currentPlan.duration }} days | Water Goal: {{ currentPlan.dailyWaterIntake ? currentPlan.dailyWaterIntake ~ 'L/day' : 'Not set' }}</small></p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('app_coach_athletes') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary-custom">
+                                {% if currentPlan %}
+                                    Update Assignment
+                                {% else %}
+                                    Assign Plan
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Available Plans -->
+            <div class="card card-custom">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">Available Nutrition Plans</h5>
+                </div>
+                <div class="card-body">
+                    {% if nutritionPlans|length > 0 %}
+                        <div class="row">
+                            {% for plan in nutritionPlans %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ plan.name }}</h6>
+                                        <p class="card-text small">{{ plan.description|slice(0, 100) }}...</p>
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <strong>Duration:</strong> {{ plan.duration }} days<br>
+                                                <strong>Water Goal:</strong> {{ plan.dailyWaterIntake ? plan.dailyWaterIntake ~ 'L/day' : 'Not set' }}
+                                            </small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <small class="text-muted">
+                                                <strong>Meals:</strong> {{ plan.meals|length }}<br>
+                                                <strong>Created:</strong> {{ plan.createdAt|date('Y-m-d') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-utensils fa-3x mb-3" style="color: var(--primary-blue);"></i>
+                            <h5>No Nutrition Plans Available</h5>
+                            <p class="text-muted">You need to create nutrition plans first.</p>
+                            <a href="{{ path('app_coach_nutrition_plan_new') }}" class="btn btn-primary-custom">Create New Plan</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Manage Athletes - Coach Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4" style="color: var(--primary-green);">Manage Athletes</h1>
+            
+            <!-- Quick Stats -->
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card card-custom text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Athletes</h5>
+                            <h2 style="color: var(--primary-green);">{{ athletes|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card card-custom text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Assigned Plans</h5>
+                            <h2 style="color: var(--primary-green);">
+                                {% set assignedCount = 0 %}
+                                {% for athlete in athletes %}
+                                    {% if athlete.assignedNutritionPlan %}
+                                        {% set assignedCount = assignedCount + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ assignedCount }}
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card card-custom text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Available Plans</h5>
+                            <h2 style="color: var(--primary-green);">{{ nutritionPlans|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Athletes Table -->
+            <div class="card card-custom">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">Athletes List</h5>
+                    <a href="{{ path('app_coach_dashboard') }}" class="btn btn-light btn-sm">Back to Dashboard</a>
+                </div>
+                <div class="card-body">
+                    {% if athletes|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Assigned Plan</th>
+                                        <th>Plan Details</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for athlete in athletes %}
+                                    <tr>
+                                        <td>{{ athlete.id }}</td>
+                                        <td>
+                                            <strong>{{ athlete.name }}</strong>
+                                        </td>
+                                        <td>{{ athlete.email }}</td>
+                                        <td>
+                                            {% if athlete.assignedNutritionPlan %}
+                                                <span class="badge bg-success">{{ athlete.assignedNutritionPlan.name }}</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">No Plan Assigned</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if athlete.assignedNutritionPlan %}
+                                                <small>
+                                                    <strong>Duration:</strong> {{ athlete.assignedNutritionPlan.duration }} days<br>
+                                                    <strong>Water Goal:</strong> {{ athlete.assignedNutritionPlan.dailyWaterIntake ? athlete.assignedNutritionPlan.dailyWaterIntake ~ 'L/day' : 'Not set' }}
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('app_coach_athlete_assign_plan', {'id': athlete.id}) }}" class="btn btn-sm btn-primary-custom">
+                                                {% if athlete.assignedNutritionPlan %}
+                                                    Change Plan
+                                                {% else %}
+                                                    Assign Plan
+                                                {% endif %}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x mb-3" style="color: var(--primary-blue);"></i>
+                            <h5>No Athletes Found</h5>
+                            <p class="text-muted">There are no athletes registered in the system yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Nutrition Plans Summary -->
+            {% if nutritionPlans|length > 0 %}
+            <div class="card card-custom mt-4">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">Available Nutrition Plans</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for plan in nutritionPlans %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ plan.name }}</h6>
+                                    <p class="card-text small">{{ plan.description|slice(0, 80) }}...</p>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Duration: {{ plan.duration }} days</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            <strong>Assigned to:</strong> 
+                                            {% set planAthletesCount = 0 %}
+                                            {% for athlete in athletes %}
+                                                {% if athlete.assignedNutritionPlan and athlete.assignedNutritionPlan.id == plan.id %}
+                                                    {% set planAthletesCount = planAthletesCount + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ planAthletesCount }} athlete(s)
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
