@@ -16,5 +16,13 @@ class MealRepository extends ServiceEntityRepository
         parent::__construct($registry, Meal::class);
     }
 
-    // Add your custom methods here
+    public function findByCoach($coach)
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.coach = :coach')
+            ->setParameter('coach', $coach)
+            ->orderBy('m.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

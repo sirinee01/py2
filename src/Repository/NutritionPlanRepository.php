@@ -16,5 +16,13 @@ class NutritionPlanRepository extends ServiceEntityRepository
         parent::__construct($registry, NutritionPlan::class);
     }
 
-    // Add your custom methods here
+    public function findByCoach($coach)
+    {
+        return $this->createQueryBuilder('n')
+            ->andWhere('n.coach = :coach')
+            ->setParameter('coach', $coach)
+            ->orderBy('n.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

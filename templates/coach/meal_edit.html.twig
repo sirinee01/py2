@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Meal - Coach Dashboard{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card card-custom">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">Edit Meal: {{ meal.name }}</h5>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.name) }}
+                                {{ form_widget(form.name) }}
+                                {{ form_errors(form.name) }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.calories) }}
+                                {{ form_widget(form.calories) }}
+                                {{ form_errors(form.calories) }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.description) }}
+                            {{ form_widget(form.description) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.protein) }}
+                                {{ form_widget(form.protein) }}
+                                {{ form_errors(form.protein) }}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.carbs) }}
+                                {{ form_widget(form.carbs) }}
+                                {{ form_errors(form.carbs) }}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.fat) }}
+                                {{ form_widget(form.fat) }}
+                                {{ form_errors(form.fat) }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.imageFile) }}
+                            {{ form_widget(form.imageFile) }}
+                            {{ form_errors(form.imageFile) }}
+                            <small class="text-muted">Upload new image to replace current one (JPEG, PNG, max 1MB)</small>
+                            {% if meal.image %}
+                                <div class="mt-2">
+                                    <p>Current Image:</p>
+                                    <img src="{{ asset('uploads/meals/' ~ meal.image) }}" alt="{{ meal.name }}" class="img-thumbnail" style="max-height: 150px;">
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form_label(form.nutritionPlans) }}
+                            {{ form_widget(form.nutritionPlans) }}
+                            {{ form_errors(form.nutritionPlans) }}
+                            <small class="text-muted">Select which nutrition plans this meal belongs to</small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('app_coach_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                            <div>
+                                <button type="submit" class="btn btn-primary-custom">Update Meal</button>
+                            </div>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -80,39 +80,84 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="{{ path('app_dashboard') }}">
-                <strong>Sports Management</strong>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if app.user %}
+    <div class="container">
+        <a class="navbar-brand" href="{{ path('app_dashboard') }}">
+            <strong>Sports Management</strong>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% if app.user %}
+                    {% if app.user.roleType == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_admin') }}">Admin Panel</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_dashboard') }}">Dashboard</a>
+                        </li>
+                    {% elseif app.user.roleType == 'coach' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_coach_dashboard') }}">Coach Dashboard</a>
+                        </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                {{ app.user.name }}
-                                <span class="role-badge ms-2">{{ app.user.roleType|capitalize }}</span>
+                            <a class="nav-link dropdown-toggle" href="#" id="coachDropdown" role="button" data-bs-toggle="dropdown">
+                                Nutrition Plans
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ path('app_dashboard') }}">Dashboard</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ path('app_logout') }}">Logout</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_coach_nutrition_plan_new') }}">Create New Plan</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_coach_dashboard') }}">View My Plans</a></li>
                             </ul>
                         </li>
-                    {% else %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="mealsDropdown" role="button" data-bs-toggle="dropdown">
+                                Meals
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ path('app_coach_meal_new') }}">Add New Meal</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_coach_dashboard') }}">View All Meals</a></li>
+                            </ul>
+                        </li>
+                    {% elseif app.user.roleType == 'athlete' %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_login') }}">Login</a>
+                            <a class="nav-link" href="{{ path('app_athlete_dashboard') }}">Athlete Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_register') }}">Register</a>
+                            <a class="nav-link" href="{{ path('app_athlete_nutrition_plans') }}">Nutrition Plans</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_athlete_meals') }}">Meals</a>
                         </li>
                     {% endif %}
-                </ul>
-            </div>
+                {% endif %}
+            </ul>
+            
+            <ul class="navbar-nav ms-auto">
+                {% if app.user %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            {{ app.user.name }}
+                            <span class="role-badge ms-2">{{ app.user.roleType|capitalize }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ path('app_dashboard') }}">Main Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_register') }}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <main>
         <div class="container">
