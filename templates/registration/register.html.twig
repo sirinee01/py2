@@ -2,6 +2,28 @@
 
 {% block title %}Register - Sports Management{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    .alert-danger ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+    }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="login-container">
     <div class="col-md-6 col-lg-5">
@@ -9,30 +31,74 @@
             <div class="card-body p-5">
                 <h2 class="text-center mb-4" style="color: var(--primary-green);">Create Account</h2>
                 
-                {{ form_start(registrationForm) }}
+                {# Display flash messages #}
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+                
+                {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+                
+                    {# Name field with error display #}
                     <div class="mb-3">
-                        {{ form_label(registrationForm.name) }}
-                        {{ form_widget(registrationForm.name) }}
-                        {{ form_errors(registrationForm.name) }}
+                        {{ form_label(registrationForm.name, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(registrationForm.name, {'attr': {'class': 'form-control' ~ (form_errors(registrationForm.name) ? ' is-invalid' : '')}}) }}
+                        {% if form_errors(registrationForm.name) %}
+                            <div class="invalid-feedback d-block">
+                                {{ form_errors(registrationForm.name) }}
+                            </div>
+                        {% endif %}
                     </div>
                     
+                    {# Email field with error display #}
                     <div class="mb-3">
-                        {{ form_label(registrationForm.email) }}
-                        {{ form_widget(registrationForm.email) }}
-                        {{ form_errors(registrationForm.email) }}
+                        {{ form_label(registrationForm.email, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control' ~ (form_errors(registrationForm.email) ? ' is-invalid' : '')}}) }}
+                        {% if form_errors(registrationForm.email) %}
+                            <div class="invalid-feedback d-block">
+                                {{ form_errors(registrationForm.email) }}
+                            </div>
+                        {% endif %}
                     </div>
                     
+                    {# Role Type field with error display #}
                     <div class="mb-3">
-                        {{ form_label(registrationForm.roleType) }}
-                        {{ form_widget(registrationForm.roleType) }}
-                        {{ form_errors(registrationForm.roleType) }}
+                        {{ form_label(registrationForm.roleType, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(registrationForm.roleType, {'attr': {'class': 'form-select' ~ (form_errors(registrationForm.roleType) ? ' is-invalid' : '')}}) }}
+                        {% if form_errors(registrationForm.roleType) %}
+                            <div class="invalid-feedback d-block">
+                                {{ form_errors(registrationForm.roleType) }}
+                            </div>
+                        {% endif %}
                     </div>
                     
+                    {# Password field with error display #}
                     <div class="mb-4">
-                        {{ form_label(registrationForm.plainPassword) }}
-                        {{ form_widget(registrationForm.plainPassword) }}
-                        {{ form_errors(registrationForm.plainPassword) }}
+                        {{ form_label(registrationForm.plainPassword, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control' ~ (form_errors(registrationForm.plainPassword) ? ' is-invalid' : '')}}) }}
+                        {% if form_errors(registrationForm.plainPassword) %}
+                            <div class="invalid-feedback d-block">
+                                {{ form_errors(registrationForm.plainPassword) }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Password must be at least 6 characters long.</div>
                     </div>
+                    
+                    {# Terms agreement if you have it #}
+                    {% if registrationForm.agreeTerms is defined %}
+                        <div class="mb-3 form-check">
+                            {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input' ~ (form_errors(registrationForm.agreeTerms) ? ' is-invalid' : '')}}) }}
+                            {{ form_label(registrationForm.agreeTerms, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                            {% if form_errors(registrationForm.agreeTerms) %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form_errors(registrationForm.agreeTerms) }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                     
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary-custom btn-lg">Register</button>

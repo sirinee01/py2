@@ -1,0 +1,246 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Exercise Library - Athlete Dashboard{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .exercise-card {
+        transition: transform 0.2s;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .exercise-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .body-part-card {
+        background: linear-gradient(135deg, #48A64D 0%, #3c8a41 100%);
+        color: white;
+        border: none;
+        transition: transform 0.2s;
+    }
+    .body-part-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .exercise-gif {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .muscle-badge {
+        background-color: #ADC2CA;
+        color: white;
+        font-size: 0.8em;
+    }
+    .equipment-badge {
+        background-color: #6c757d;
+        color: white;
+        font-size: 0.8em;
+    }
+    .instruction-step {
+        padding: 5px 0;
+        border-bottom: 1px dashed #eee;
+    }
+    .instruction-step:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4" style="color: var(--primary-green);">Exercise Library</h1>
+            
+            <!-- Body Parts Selection -->
+            <div class="card card-custom mb-4">
+                <div class="card-header" style="background-color: var(--primary-green); color: white;">
+                    <h5 class="mb-0">Select Body Part</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for part in bodyParts %}
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{{ path('app_athlete_exercises_by_bodypart', {'bodyPart': part}) }}" 
+                               class="card body-part-card text-center text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-dumbbell me-2"></i>
+                                        {{ part|capitalize }}
+                                    </h6>
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Search Form -->
+                    <form method="get" action="{{ path('app_athlete_exercises') }}" class="mt-4">
+                        <div class="row g-2">
+                            <div class="col-md-8">
+                                <select name="bodyPart" class="form-select" required>
+                                    <option value="">Select a body part...</option>
+                                    {% for part in bodyParts %}
+                                        <option value="{{ part }}" {% if bodyPart == part %}selected{% endif %}>
+                                            {{ part|capitalize }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary-custom w-100">
+                                    <i class="fas fa-search"></i> Search Exercises
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if bodyPart %}
+                <!-- Results Section -->
+                <div class="card card-custom">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="background-color: var(--primary-green); color: white;">
+                        <h5 class="mb-0">
+                            <i class="fas fa-dumbbell me-2"></i>
+                            Exercises for: {{ bodyPart|capitalize }}
+                        </h5>
+                        <span class="badge bg-light text-dark">
+                            {{ exercises|length }} exercises found
+                        </span>
+                    </div>
+                    
+                    <div class="card-body">
+                        {% if exercises is empty %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-dumbbell fa-4x mb-3" style="color: var(--primary-blue);"></i>
+                                <h5>No Exercises Found</h5>
+                                <p class="text-muted">Try selecting a different body part.</p>
+                            </div>
+                        {% else %}
+                            <div class="row">
+                                {% for exercise in exercises %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card exercise-card h-100">
+                                        {% if exercise.gifUrl %}
+                                            <img src="{{ exercise.gifUrl }}" 
+                                                 class="exercise-gif" 
+                                                 alt="{{ exercise.name }}"
+                                                 loading="lazy">
+                                        {% else %}
+                                            <div class="exercise-gif bg-light d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-dumbbell fa-3x" style="color: var(--primary-green);"></i>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ exercise.name }}</h5>
+                                            
+                                            <!-- Target Muscles -->
+                                            {% if exercise.targetMuscles is not empty %}
+                                                <div class="mb-3">
+                                                    <h6 class="text-muted" style="font-size: 0.9em;">
+                                                        <i class="fas fa-muscle"></i> Target Muscles:
+                                                    </h6>
+                                                    <div>
+                                                        {% for muscle in exercise.targetMuscles %}
+                                                            <span class="badge muscle-badge me-1 mb-1">{{ muscle }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <!-- Equipment -->
+                                            {% if exercise.equipments is not empty %}
+                                                <div class="mb-3">
+                                                    <h6 class="text-muted" style="font-size: 0.9em;">
+                                                        <i class="fas fa-tools"></i> Equipment:
+                                                    </h6>
+                                                    <div>
+                                                        {% for equipment in exercise.equipments %}
+                                                            <span class="badge equipment-badge me-1 mb-1">{{ equipment }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <!-- Instructions (Collapsible) -->
+                                            {% if exercise.instructions is not empty %}
+                                                <div class="mt-3">
+                                                    <button class="btn btn-sm btn-outline-primary w-100" 
+                                                            type="button" 
+                                                            data-bs-toggle="collapse" 
+                                                            data-bs-target="#instructions{{ loop.index }}">
+                                                        <i class="fas fa-info-circle"></i> View Instructions
+                                                    </button>
+                                                    
+                                                    <div class="collapse mt-2" id="instructions{{ loop.index }}">
+                                                        <div class="card card-body bg-light">
+                                                            <h6 class="text-muted">Instructions:</h6>
+                                                            <ol class="mb-0">
+                                                                {% for instruction in exercise.instructions %}
+                                                                    <li class="instruction-step">{{ instruction }}</li>
+                                                                {% endfor %}
+                                                            </ol>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="card-footer bg-transparent">
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle"></i> Click "View Instructions" for detailed steps
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Pagination -->
+                            {% if metadata.previousPage or metadata.nextPage %}
+                                <div class="mt-4 d-flex justify-content-center">
+                                    <nav aria-label="Exercise navigation">
+                                        <ul class="pagination">
+                                            {% if metadata.previousPage %}
+                                                <li class="page-item">
+                                                    <a class="page-link" 
+                                                       href="{{ path('app_athlete_exercises_by_bodypart', {'bodyPart': bodyPart}) }}?page={{ page - 1 }}">
+                                                        <i class="fas fa-chevron-left"></i> Previous
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                            
+                                            {% if metadata.nextPage %}
+                                                <li class="page-item">
+                                                    <a class="page-link" 
+                                                       href="{{ path('app_athlete_exercises_by_bodypart', {'bodyPart': bodyPart}) }}?page={{ page + 1 }}">
+                                                        Next <i class="fas fa-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Back to Dashboard -->
+            <div class="mt-4">
+                <a href="{{ path('app_athlete_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
