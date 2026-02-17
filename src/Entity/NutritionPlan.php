@@ -37,22 +37,19 @@ class NutritionPlan
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
-    // Daily water intake in liters
     #[ORM\Column(nullable: true)]
     #[Assert\PositiveOrZero]
     private ?int $dailyWaterIntake = null;
 
-    // Relationship with User (coach)
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'nutritionPlans')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $coach = null;
 
-    // Relationship with Meal (ManyToMany)
-    #[ORM\ManyToMany(targetEntity: Meal::class, inversedBy: 'nutritionPlans')]
+    // FIX: This is now the inverse side (mappedBy points to Meal's property)
+    #[ORM\ManyToMany(targetEntity: Meal::class, mappedBy: 'nutritionPlans')]
     private Collection $meals;
 
-    // Relationship with User (athletes) - ManyToMany
-    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'assignedNutritionPlan')]
+    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'assignedNutritionPlan')]
     private Collection $athletes;
 
     public function __construct()
@@ -75,7 +72,6 @@ class NutritionPlan
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -87,7 +83,6 @@ class NutritionPlan
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -99,7 +94,6 @@ class NutritionPlan
     public function setDuration(int $duration): static
     {
         $this->duration = $duration;
-
         return $this;
     }
 
@@ -111,7 +105,6 @@ class NutritionPlan
     public function setObjective(string $objective): static
     {
         $this->objective = $objective;
-
         return $this;
     }
 
@@ -123,7 +116,6 @@ class NutritionPlan
     public function setCreatedAt(\DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -135,7 +127,6 @@ class NutritionPlan
     public function setDailyWaterIntake(?int $dailyWaterIntake): static
     {
         $this->dailyWaterIntake = $dailyWaterIntake;
-
         return $this;
     }
 
@@ -147,7 +138,6 @@ class NutritionPlan
     public function setCoach(?User $coach): static
     {
         $this->coach = $coach;
-
         return $this;
     }
 
@@ -163,18 +153,22 @@ class NutritionPlan
     {
         if (!$this->meals->contains($meal)) {
             $this->meals->add($meal);
-            $meal->addNutritionPlan($this);
+            // Ensure bidirectional consistency
+            if (!$meal->getNutritionPlans()->contains($this)) {
+                $meal->addNutritionPlan($this);
+            }
         }
-
         return $this;
     }
 
     public function removeMeal(Meal $meal): static
     {
         if ($this->meals->removeElement($meal)) {
-            $meal->removeNutritionPlan($this);
+            // Ensure bidirectional consistency
+            if ($meal->getNutritionPlans()->contains($this)) {
+                $meal->removeNutritionPlan($this);
+            }
         }
-
         return $this;
     }
 
@@ -192,26 +186,23 @@ class NutritionPlan
             $this->athletes->add($athlete);
             $athlete->setAssignedNutritionPlan($this);
         }
-
         return $this;
     }
 
     public function removeAthlete(User $athlete): static
     {
         if ($this->athletes->removeElement($athlete)) {
-            // set the owning side to null (unless already changed)
             if ($athlete->getAssignedNutritionPlan() === $this) {
                 $athlete->setAssignedNutritionPlan(null);
             }
         }
-
         return $this;
     }
 
     // Helper method to get today's meals
     public function getTodaysMeals(): Collection
     {
-        $today = date('N'); // 1 (Monday) through 7 (Sunday)
+        $today = date('N');
         $todaysMeals = new ArrayCollection();
         
         foreach ($this->meals as $meal) {

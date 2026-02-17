@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Meal;
 use App\Entity\NutritionPlan;
+use App\Repository\NutritionPlanRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -71,7 +72,13 @@ class MealType extends AbstractType
                 'expanded' => false,
                 'attr' => ['class' => 'form-select'],
                 'label' => 'Assign to Nutrition Plans',
-                'required' => false
+                'required' => false,
+                'query_builder' => function (NutritionPlanRepository $repo) use ($options) {
+                    return $repo->createQueryBuilder('np')
+                        ->where('np.coach = :coach')
+                        ->setParameter('coach', $options['coach'])
+                        ->orderBy('np.name', 'ASC');
+                },
             ])
             ->add('mealTime', ChoiceType::class, [
                 'choices' => [
@@ -104,6 +111,9 @@ class MealType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Meal::class,
+            'coach' => null,
         ]);
+        
+        $resolver->setAllowedTypes('coach', ['null', 'object']);
     }
 }

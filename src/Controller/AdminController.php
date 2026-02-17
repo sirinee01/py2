@@ -20,10 +20,11 @@ class AdminController extends AbstractController
         
         $users = $userRepository->findAll();
         $stats = $this->getStatistics($userRepository);
-        
+        $user = $this->getUser();
         return $this->render('admin/index.html.twig', [
             'users' => $users,
             'stats' => $stats,
+            'user' => $user,
         ]);
     }
 

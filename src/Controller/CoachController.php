@@ -162,7 +162,10 @@ class CoachController extends AbstractController
         $meal = new Meal();
         $meal->setCoach($this->getUser());
         
-        $form = $this->createForm(MealType::class, $meal);
+        $form = $this->createForm(MealType::class, $meal, [
+            'coach' => $this->getUser()
+        ]);
+        
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -179,11 +182,18 @@ class CoachController extends AbstractController
                         $this->getParameter('meals_directory'),
                         $newFilename
                     );
+                    $meal->setImage($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Error uploading image.');
                 }
-                
-                $meal->setImage($newFilename);
+            }
+            
+            // Explicitly handle nutrition plans to ensure they're saved
+            $selectedPlans = $form->get('nutritionPlans')->getData();
+            foreach ($selectedPlans as $plan) {
+                if (!$meal->getNutritionPlans()->contains($plan)) {
+                    $meal->addNutritionPlan($plan);
+                }
             }
             
             $entityManager->persist($meal);
@@ -208,7 +218,10 @@ class CoachController extends AbstractController
             throw $this->createAccessDeniedException('You cannot edit this meal.');
         }
         
-        $form = $this->createForm(MealType::class, $meal);
+        $form = $this->createForm(MealType::class, $meal, [
+            'coach' => $this->getUser()
+        ]);
+        
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -238,6 +251,23 @@ class CoachController extends AbstractController
                 }
                 
                 $meal->setImage($newFilename);
+            }
+            
+            // Explicitly handle nutrition plans to ensure they're saved correctly
+            $selectedPlans = $form->get('nutritionPlans')->getData();
+            
+            // Remove plans that are no longer selected
+            foreach ($meal->getNutritionPlans() as $existingPlan) {
+                if (!$selectedPlans->contains($existingPlan)) {
+                    $meal->removeNutritionPlan($existingPlan);
+                }
+            }
+            
+            // Add newly selected plans
+            foreach ($selectedPlans as $plan) {
+                if (!$meal->getNutritionPlans()->contains($plan)) {
+                    $meal->addNutritionPlan($plan);
+                }
             }
             
             $entityManager->flush();

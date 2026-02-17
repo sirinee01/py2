@@ -3,47 +3,530 @@
 {% block title %}New Nutrition Plan - Coach Dashboard{% endblock %}
 
 {% block body %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card card-custom">
-                <div class="card-header" style="background-color: var(--primary-green); color: white;">
-                    <h5 class="mb-0">Create New Nutrition Plan</h5>
+<div class="admin-wrapper d-flex" style="min-height: 100vh; width: 100%; margin: 0; padding: 0;">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="sidebar" style="width: 280px; background: linear-gradient(180deg, #1a2e35 0%, #0f1e24 100%); min-height: 100vh; transition: width 0.3s ease; position: fixed; left: 0; top: 0; bottom: 0; z-index: 1000; overflow-y: auto; overflow-x: hidden;">
+        <div class="sidebar-header p-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h3 class="text-white mb-0" style="font-weight: 600; white-space: nowrap;">
+                <span style="color: var(--primary-green);">⚡</span> <span class="sidebar-text">CoachPanel</span>
+            </h3>
+        </div>
+        
+        <div class="sidebar-menu p-3">
+            <!-- Coach Profile -->
+            <div class="admin-profile d-flex align-items-center p-3 mb-4" style="background: rgba(255,255,255,0.05); border-radius: 12px;">
+                <div class="avatar me-3" style="width: 48px; height: 48px; background: var(--primary-green); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-chalkboard-teacher text-white" style="font-size: 1.5rem;"></i>
                 </div>
-                <div class="card-body">
-                    {{ form_start(form) }}
-                        <div class="mb-3">
-                            {{ form_label(form.name) }}
-                            {{ form_widget(form.name) }}
-                            {{ form_errors(form.name) }}
+                <div class="sidebar-text" style="overflow: hidden;">
+                    <h6 class="text-white mb-1" style="white-space: nowrap;">{{ app.user.name|default('Coach') }}</h6>
+                    <p class="text-white-50 small mb-0" style="white-space: nowrap;">{{ app.user.email|default('coach@sports.com') }}</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="nav flex-column">
+                <a href="{{ path('app_coach_dashboard') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-tachometer-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                
+                <a href="{{ path('app_coach_athletes') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-users me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">My Athletes</span>
+                </a>
+                
+                <!-- Nutrition Plans with dropdown -->
+                <div class="nav-item">
+                    <a href="#" class="nav-link active d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="background: var(--primary-green); color: white;" onclick="toggleSubmenu(event, 'nutritionSubmenu')">
+                        <i class="fas fa-utensils me-3" style="width: 20px; flex-shrink: 0;"></i>
+                        <span class="sidebar-text flex-grow-1">Nutrition Plans</span>
+                        <i class="fas fa-chevron-down sidebar-text" id="nutritionMenuArrow" style="font-size: 0.8rem; transition: transform 0.3s;"></i>
+                    </a>
+                    <!-- Submenu -->
+                    <div class="submenu" id="nutritionSubmenu" style="display: block; margin-left: 2.5rem; margin-bottom: 0.5rem;">
+                        <a href="{{ path('app_coach_nutrition_plan_new') }}" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="background: rgba(255,255,255,0.1); color: white; font-size: 0.9rem;">
+                            <i class="fas fa-plus-circle me-2" style="width: 16px;"></i>
+                            <span class="sidebar-text">Create New Plan</span>
+                        </a>
+                        <a href="{{ path('app_coach_dashboard') }}#plans" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                            <i class="fas fa-list me-2" style="width: 16px;"></i>
+                            <span class="sidebar-text">View All Plans</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Meals with dropdown -->
+                <div class="nav-item">
+                    <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8);" onclick="toggleSubmenu(event, 'mealsSubmenu')" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                        <i class="fas fa-bacon me-3" style="width: 20px; flex-shrink: 0;"></i>
+                        <span class="sidebar-text flex-grow-1">Meals</span>
+                        <i class="fas fa-chevron-down sidebar-text" id="mealsMenuArrow" style="font-size: 0.8rem; transition: transform 0.3s;"></i>
+                    </a>
+                    <!-- Submenu -->
+                    <div class="submenu" id="mealsSubmenu" style="display: none; margin-left: 2.5rem; margin-bottom: 0.5rem;">
+                        <a href="{{ path('app_coach_meal_new') }}" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                            <i class="fas fa-plus-circle me-2" style="width: 16px;"></i>
+                            <span class="sidebar-text">Add New Meal</span>
+                        </a>
+                        <a href="{{ path('app_coach_dashboard') }}#meals" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                            <i class="fas fa-list me-2" style="width: 16px;"></i>
+                            <span class="sidebar-text">View All Meals</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+                
+                <a href="{{ path('app_logout') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,0,0,0.2)'; this.style.color='#ff6b6b';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-sign-out-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Logout</span>
+                </a>
+            </nav>
+            
+            <div class="btn btn-sm text-white d-flex justify-content-end">
+                <button id="sidebarToggle" class="btn btn-sm text-white d-flex justify-content-end" style="background: transparent; border: none; font-size: 1.2rem;">
+                    <i class="fas fa-chevron-left" id="toggleIcon"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="mainContent" style="margin-left: 280px; width: calc(100% - 280px); background: #f8f9fa; min-height: 100vh; transition: margin-left 0.3s ease, width 0.3s ease;">
+        
+        <!-- Content Area -->
+        <div class="content-area p-4">
+            
+            <!-- Flash Messages -->
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px; border-left: 4px solid {% if type == 'success' %}var(--primary-green){% elseif type == 'error' %}#dc3545{% else %}#0dcaf0{% endif %};">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                {% if type == 'success' %}
+                                    <i class="fas fa-check-circle" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                {% elseif type == 'error' %}
+                                    <i class="fas fa-exclamation-circle" style="color: #dc3545; font-size: 1.5rem;"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle" style="color: #0dcaf0; font-size: 1.5rem;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ path('app_coach_dashboard') }}" style="color: var(--primary-green); text-decoration: none;">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('app_coach_dashboard') }}#plans" style="color: var(--primary-green); text-decoration: none;">Nutrition Plans</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Create New Plan</li>
+                </ol>
+            </nav>
+            
+            <!-- Create Plan Card -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+                        <div class="card-header bg-white border-0 p-4">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle me-3" style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-utensils" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1" style="color: var(--primary-green);">Create New Nutrition Plan</h4>
+                                    <p class="text-muted small mb-0">Fill in the details below to create a nutrition plan</p>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="mb-3">
-                            {{ form_label(form.description) }}
-                            {{ form_widget(form.description) }}
-                            {{ form_errors(form.description) }}
+                        <div class="card-body p-4">
+                            {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                                
+                                <div class="mb-4">
+                                    {{ form_label(form.name, null, {'label_attr': {'class': 'form-label text-muted small fw-bold'}}) }}
+                                    <div class="input-group" style="border-radius: 12px; overflow: hidden;">
+                                        <span class="input-group-text bg-white border-0" style="background: white;">
+                                            <i class="fas fa-tag" style="color: var(--primary-green);"></i>
+                                        </span>
+                                        {{ form_widget(form.name, {'attr': {
+                                            'class': 'form-control border-0 py-3' ~ (form.name.vars.errors|length ? ' is-invalid' : ''),
+                                            'placeholder': 'Enter plan name (e.g., Weight Loss Program)',
+                                            'style': 'background: #f8f9fa;'
+                                        }}) }}
+                                    </div>
+                                    {% if form.name.vars.errors|length %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.name.vars.errors %}
+                                                {{ error.message }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-4">
+                                    {{ form_label(form.description, null, {'label_attr': {'class': 'form-label text-muted small fw-bold'}}) }}
+                                    <div class="input-group" style="border-radius: 12px; overflow: hidden;">
+                                        <span class="input-group-text bg-white border-0" style="background: white; align-items: flex-start;">
+                                            <i class="fas fa-align-left" style="color: var(--primary-green);"></i>
+                                        </span>
+                                        {{ form_widget(form.description, {'attr': {
+                                            'class': 'form-control border-0 py-3' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
+                                            'placeholder': 'Enter plan description (what makes this plan special?)',
+                                            'rows': 4,
+                                            'style': 'background: #f8f9fa;'
+                                        }}) }}
+                                    </div>
+                                    {% if form.description.vars.errors|length %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.description.vars.errors %}
+                                                {{ error.message }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        {{ form_label(form.duration, null, {'label_attr': {'class': 'form-label text-muted small fw-bold'}}) }}
+                                        <div class="input-group" style="border-radius: 12px; overflow: hidden;">
+                                            <span class="input-group-text bg-white border-0" style="background: white;">
+                                                <i class="fas fa-clock" style="color: var(--primary-green);"></i>
+                                            </span>
+                                            {{ form_widget(form.duration, {'attr': {
+                                                'class': 'form-control border-0 py-3' ~ (form.duration.vars.errors|length ? ' is-invalid' : ''),
+                                                'placeholder': 'Duration in days',
+                                                'style': 'background: #f8f9fa;'
+                                            }}) }}
+                                        </div>
+                                        {% if form.duration.vars.errors|length %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.duration.vars.errors %}
+                                                    {{ error.message }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <small class="text-muted">How many days the plan will last</small>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-4">
+                                        {{ form_label(form.dailyWaterIntake, null, {'label_attr': {'class': 'form-label text-muted small fw-bold'}}) }}
+                                        <div class="input-group" style="border-radius: 12px; overflow: hidden;">
+                                            <span class="input-group-text bg-white border-0" style="background: white;">
+                                                <i class="fas fa-tint" style="color: var(--primary-green);"></i>
+                                            </span>
+                                            {{ form_widget(form.dailyWaterIntake, {'attr': {
+                                                'class': 'form-control border-0 py-3' ~ (form.dailyWaterIntake.vars.errors|length ? ' is-invalid' : ''),
+                                                'placeholder': 'Daily water intake (L)',
+                                                'style': 'background: #f8f9fa;'
+                                            }}) }}
+                                        </div>
+                                        {% if form.dailyWaterIntake.vars.errors|length %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.dailyWaterIntake.vars.errors %}
+                                                    {{ error.message }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <small class="text-muted">Recommended daily water intake in liters (optional)</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    {{ form_label(form.objective, null, {'label_attr': {'class': 'form-label text-muted small fw-bold'}}) }}
+                                    <div class="input-group" style="border-radius: 12px; overflow: hidden;">
+                                        <span class="input-group-text bg-white border-0" style="background: white; align-items: flex-start;">
+                                            <i class="fas fa-bullseye" style="color: var(--primary-green);"></i>
+                                        </span>
+                                        {{ form_widget(form.objective, {'attr': {
+                                            'class': 'form-control border-0 py-3' ~ (form.objective.vars.errors|length ? ' is-invalid' : ''),
+                                            'placeholder': 'Enter plan objective (e.g., Build muscle, Weight loss)',
+                                            'rows': 3,
+                                            'style': 'background: #f8f9fa;'
+                                        }}) }}
+                                    </div>
+                                    {% if form.objective.vars.errors|length %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.objective.vars.errors %}
+                                                {{ error.message }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Preview Card -->
+                                <div class="bg-light p-4 rounded-3 mb-4" style="background: #f8f9fa;">
+                                    <h6 class="small fw-bold text-muted mb-3">PLAN PREVIEW</h6>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar-circle me-3" style="width: 50px; height: 50px; background: var(--primary-green); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.2rem;">
+                                            <i class="fas fa-utensils"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1" id="previewName">New Nutrition Plan</h5>
+                                            <p class="text-muted small mb-0" id="previewDuration">Duration: 0 days</p>
+                                        </div>
+                                    </div>
+                                    <p class="small text-muted mb-2" id="previewDescription">Your plan description will appear here</p>
+                                    <div class="d-flex">
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 me-2" id="previewWater">
+                                            <i class="fas fa-tint me-2"></i>Water goal: Not set
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                    <a href="{{ path('app_coach_dashboard') }}" class="btn btn-link text-decoration-none" style="color: #6c757d;">
+                                        <i class="fas fa-arrow-left me-2"></i>
+                                        Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success rounded-pill px-4" style="background: var(--primary-green); border: none;">
+                                        <i class="fas fa-save me-2"></i>
+                                        Create Plan
+                                    </button>
+                                </div>
+                                
+                            {{ form_end(form) }}
                         </div>
-                        
-                        <div class="mb-3">
-                            {{ form_label(form.duration) }}
-                            {{ form_widget(form.duration) }}
-                            {{ form_errors(form.duration) }}
+                    </div>
+                    
+                    <!-- Tips Card -->
+                    <div class="card border-0 shadow-sm mt-4" style="border-radius: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="card-body p-4">
+                            <div class="d-flex">
+                                <div class="p-3 ">
+                                    <i class="fas fa-lightbulb text-white" style="font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-white mb-2">Tips for creating a great nutrition plan</h6>
+                                    <ul class="text-white-50 small mb-0" style="padding-left: 1rem;">
+                                        <li>Give your plan a clear, descriptive name</li>
+                                        <li>Include specific details in the description</li>
+                                        <li>Set realistic duration based on goals</li>
+                                        <li>Define clear objectives for athletes</li>
+                                        <li>You can add meals to this plan later</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="mb-4">
-                            {{ form_label(form.objective) }}
-                            {{ form_widget(form.objective) }}
-                            {{ form_errors(form.objective) }}
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ path('app_coach_dashboard') }}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary-custom">Create Plan</button>
-                        </div>
-                    {{ form_end(form) }}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 </div>
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.admin-wrapper {
+    position: relative;
+}
+
+.admin-sidebar {
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+
+.admin-sidebar.collapsed {
+    width: 80px !important;
+}
+
+.admin-sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+.admin-sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 12px !important;
+}
+
+.admin-sidebar.collapsed .nav-link i {
+    margin-right: 0 !important;
+}
+
+.admin-sidebar.collapsed .badge {
+    display: none;
+}
+
+.admin-sidebar.collapsed .admin-profile {
+    justify-content: center;
+}
+
+.admin-sidebar.collapsed .admin-profile .avatar {
+    margin-right: 0 !important;
+}
+
+#mainContent.expanded {
+    margin-left: 80px !important;
+    width: calc(100% - 80px) !important;
+}
+
+.nav-link {
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.nav-link.active {
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Form styling */
+.form-control:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    border-color: var(--primary-green);
+}
+
+.avatar-circle {
+    transition: transform 0.3s;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.1);
+}
+
+/* Hide navbar from base template if any */
+.navbar, header, .top-navbar {
+    display: none !important;
+}
+
+/* Custom scrollbar */
+.admin-main::-webkit-scrollbar {
+    width: 8px;
+}
+
+.admin-main::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.admin-main::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+}
+
+.admin-main::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+}
+</style>
+
+<!-- Add Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+// Sidebar toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    // Check local storage for sidebar state
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+        toggleIcon.classList.remove('fa-chevron-left');
+        toggleIcon.classList.add('fa-chevron-right');
+    }
+    
+    toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        
+        if (sidebar.classList.contains('collapsed')) {
+            toggleIcon.classList.remove('fa-chevron-left');
+            toggleIcon.classList.add('fa-chevron-right');
+            localStorage.setItem('sidebarCollapsed', 'true');
+        } else {
+            toggleIcon.classList.remove('fa-chevron-right');
+            toggleIcon.classList.add('fa-chevron-left');
+            localStorage.setItem('sidebarCollapsed', 'false');
+        }
+    });
+
+    // Live preview functionality
+    const nameInput = document.getElementById('{{ form.name.vars.id }}');
+    const durationInput = document.getElementById('{{ form.duration.vars.id }}');
+    const waterInput = document.getElementById('{{ form.dailyWaterIntake.vars.id }}');
+    const descriptionInput = document.getElementById('{{ form.description.vars.id }}');
+    
+    const previewName = document.getElementById('previewName');
+    const previewDuration = document.getElementById('previewDuration');
+    const previewWater = document.getElementById('previewWater');
+    const previewDescription = document.getElementById('previewDescription');
+    
+    if (nameInput) {
+        nameInput.addEventListener('input', function() {
+            previewName.textContent = this.value || 'New Nutrition Plan';
+        });
+    }
+    
+    if (durationInput) {
+        durationInput.addEventListener('input', function() {
+            const days = this.value || '0';
+            previewDuration.textContent = `Duration: ${days} days`;
+        });
+    }
+    
+    if (waterInput) {
+        waterInput.addEventListener('input', function() {
+            const water = this.value;
+            if (water) {
+                previewWater.innerHTML = `<i class="fas fa-tint me-2"></i>Water goal: ${water} L/day`;
+                previewWater.style.display = 'inline-block';
+            } else {
+                previewWater.innerHTML = `<i class="fas fa-tint me-2"></i>Water goal: Not set`;
+            }
+        });
+    }
+    
+    if (descriptionInput) {
+        descriptionInput.addEventListener('input', function() {
+            const desc = this.value;
+            if (desc) {
+                previewDescription.textContent = desc.length > 100 ? desc.substring(0, 100) + '...' : desc;
+            } else {
+                previewDescription.textContent = 'Your plan description will appear here';
+            }
+        });
+    }
+});
+
+function toggleSubmenu(event, submenuId) {
+    event.preventDefault();
+    const submenu = document.getElementById(submenuId);
+    const arrow = submenuId === 'nutritionSubmenu' ? document.getElementById('nutritionMenuArrow') : document.getElementById('mealsMenuArrow');
+    
+    if (submenu.style.display === 'none' || !submenu.style.display) {
+        submenu.style.display = 'block';
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        submenu.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Keep nutrition submenu open on this page
+document.addEventListener('DOMContentLoaded', function() {
+    const nutritionSubmenu = document.getElementById('nutritionSubmenu');
+    const nutritionArrow = document.getElementById('nutritionMenuArrow');
+    if (nutritionSubmenu) {
+        nutritionSubmenu.style.display = 'block';
+        nutritionArrow.style.transform = 'rotate(180deg)';
+    }
+});
+</script>
 {% endblock %}

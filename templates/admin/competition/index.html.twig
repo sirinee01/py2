@@ -2,123 +2,538 @@
 
 {% block title %}Manage Competitions - Admin Panel{% endblock %}
 
-{% block stylesheets %}
-{{ parent() }}
-<style>
-    .competition-card {
-        transition: transform 0.2s;
-    }
-    .competition-card:hover {
-        transform: translateY(-5px);
-    }
-    .badge-upcoming { background-color: #ffc107; color: #000; }
-    .badge-ongoing { background-color: #28a745; color: #fff; }
-    .badge-completed { background-color: #6c757d; color: #fff; }
-    .badge-cancelled { background-color: #dc3545; color: #fff; }
-</style>
-{% endblock %}
-
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2">Manage Competitions</h1>
-                <a href="{{ path('app_admin_competition_new') }}" class="btn btn-primary-custom">
-                    <i class="fas fa-plus"></i> Create New Competition
-                </a>
-            </div>
-
-            {% if competitions is empty %}
-                <div class="alert alert-info">
-                    No competitions found. <a href="{{ path('app_admin_competition_new') }}">Create your first competition</a>
+<div class="admin-wrapper d-flex" style="min-height: 100vh; width: 100%; margin: 0; padding: 0;">
+    <!-- Sidebar (Same as admin panel) -->
+    <aside class="admin-sidebar" id="sidebar" style="width: 280px; background: linear-gradient(180deg, #1a2e35 0%, #0f1e24 100%); min-height: 100vh; transition: width 0.3s ease; position: fixed; left: 0; top: 0; bottom: 0; z-index: 1000; overflow-y: auto; overflow-x: hidden;">
+        <div class="sidebar-header p-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h3 class="text-white mb-0" style="font-weight: 600; white-space: nowrap;">
+                <span style="color: var(--primary-green);">⚡</span> <span class="sidebar-text">SportsAdmin</span>
+            </h3>
+        </div>
+        
+        <div class="sidebar-menu p-3">
+            <!-- Admin Profile -->
+            <div class="admin-profile d-flex align-items-center p-3 mb-4" style="background: rgba(255,255,255,0.05); border-radius: 12px;">
+                <div class="avatar me-3" style="width: 48px; height: 48px; background: var(--primary-green); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-user-shield text-white" style="font-size: 1.5rem;"></i>
                 </div>
-            {% else %}
-                <div class="row">
-                    {% for competition in competitions %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card card-custom h-100 competition-card">
-                            {% if competition.image %}
-                                <img src="{{ asset('uploads/competitions/' ~ competition.image) }}" 
-                                     class="card-img-top" 
-                                     alt="{{ competition.name }}"
-                                     style="height: 200px; object-fit: cover;">
-                            {% else %}
-                                <div class="bg-light d-flex align-items-center justify-content-center" 
-                                     style="height: 200px;">
-                                    <i class="fas fa-trophy fa-3x text-muted"></i>
-                                </div>
-                            {% endif %}
-                            
-                            <div class="card-body">
-                                <h5 class="card-title">{{ competition.name }}</h5>
-                                <p class="card-text text-muted small">
-                                    <i class="fas fa-calendar"></i> 
-                                    {{ competition.startDate|date('M d, Y H:i') }} - {{ competition.endDate|date('M d, Y H:i') }}
-                                </p>
-                                <p class="card-text">
-                                    <i class="fas fa-map-marker-alt"></i> {{ competition.location }}
-                                </p>
-                                <p class="card-text">
-                                    <i class="fas fa-users"></i> 
-                                    Participants: {{ competition.applications|length }}/{{ competition.maxParticipants }}
-                                </p>
-                                <span class="badge badge-{{ competition.status }}">
-                                    {{ competition.status|capitalize }}
-                                </span>
-                                
-                                {% if competition.winner %}
-                                    <div class="mt-2">
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-crown"></i> Winner: {{ competition.winner }}
-                                        </span>
-                                    </div>
+                <div class="sidebar-text" style="overflow: hidden;">
+                    <h6 class="text-white mb-1" style="white-space: nowrap;">{{ app.user.name|default('Admin User') }}</h6>
+                    <p class="text-white-50 small mb-0" style="white-space: nowrap;">{{ app.user.email|default('admin@sports.com') }}</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="nav flex-column">
+                <a href="{{ path('app_admin') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-tachometer-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                
+                <!-- User Management with dropdown -->
+                <div class="nav-item">
+                    <a href="{{ path('app_admin') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">            
+                        <i class="fas fa-users me-3" style="width: 20px; flex-shrink: 0;"></i>
+                        <span class="sidebar-text flex-grow-1">Users Management</span>
+                        <i class="fas fa-chevron-down sidebar-text" id="userMenuArrow" style="font-size: 0.8rem; transition: transform 0.3s;"></i>
+                    </a>
+                    <!-- Submenu -->
+                    <div class="user-submenu" id="userSubmenu" style="display: none; margin-left: 2.5rem; margin-bottom: 0.5rem;">
+                        <a href="{{ path('app_admin') }}" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                            <i class="fas fa-users me-2" style="width: 16px; font-size: 0.8rem;"></i>
+                            <span class="sidebar-text">All Users</span>
+                        </a>
+                        <a href="{{ path('app_admin') }}?role=athlete" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                            <i class="fas fa-running me-2" style="width: 16px;"></i>
+                            <span class="sidebar-text">Athletes</span>
+                        </a>
+                        <a href="{{ path('app_admin') }}?role=coach" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                            <i class="fas fa-chalkboard-teacher me-2" style="width: 16px;"></i>
+                            <span class="sidebar-text">Coaches</span>
+                        </a>
+                        <a href="{{ path('app_admin') }}?role=admin" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                            <i class="fas fa-user-cog me-2" style="width: 16px;"></i>
+                            <span class="sidebar-text">Admins</span>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="{{ path('app_admin_competitions') }}" class="nav-link active d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="background: var(--primary-green); color: white;">
+                    <i class="fas fa-trophy me-3"></i> 
+                    <span class="sidebar-text">Competitions</span>
+                </a>
+
+                <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-utensils me-3"></i>
+                    <span class="sidebar-text">Nutrition Plans</span>
+                </a>
+
+                <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-bacon me-3"></i>
+                    <span class="sidebar-text">Meals</span>
+                </a>
+                
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+                
+                <a href="{{ path('app_logout') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,0,0,0.2)'; this.style.color='#ff6b6b';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-sign-out-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Logout</span>
+                </a>
+            </nav>
+            
+            <div class="btn btn-sm text-white d-flex justify-content-end">
+                <button id="sidebarToggle" class="btn btn-sm text-white d-flex justify-content-end" style="background: transparent; border: none; font-size: 1.2rem;">
+                    <i class="fas fa-chevron-left" id="toggleIcon"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="mainContent" style="margin-left: 280px; width: calc(100% - 280px); background: #f8f9fa; min-height: 100vh; transition: margin-left 0.3s ease, width 0.3s ease;">
+        
+        <!-- Content Area -->
+        <div class="content-area p-4">
+            
+            <!-- Flash Messages -->
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px; border-left: 4px solid {% if type == 'success' %}var(--primary-green){% elseif type == 'error' %}#dc3545{% else %}#0dcaf0{% endif %};">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                {% if type == 'success' %}
+                                    <i class="fas fa-check-circle" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                {% elseif type == 'error' %}
+                                    <i class="fas fa-exclamation-circle" style="color: #dc3545; font-size: 1.5rem;"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle" style="color: #0dcaf0; font-size: 1.5rem;"></i>
                                 {% endif %}
                             </div>
-                            <div class="card-footer bg-transparent">
-                                <div class="d-flex justify-content-between">
-                                    <a href="{{ path('app_admin_competition_applications', {'id': competition.id}) }}" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-list"></i> Applications
-                                    </a>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
-                                                type="button" 
-                                                data-bs-toggle="dropdown">
-                                            Actions
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" href="{{ path('app_admin_competition_edit', {'id': competition.id}) }}">
-                                                    <i class="fas fa-edit"></i> Edit
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <form method="post" action="{{ path('app_admin_competition_delete', {'id': competition.id}) }}" 
-                                                      onsubmit="return confirm('Are you sure you want to delete this competition?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ competition.id) }}">
-                                                    <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </form>
-                                            </li>
-                                            {% if competition.status == 'upcoming' %}
-                                            <li>
-                                                <a class="dropdown-item" href="#">
-                                                    <i class="fas fa-play"></i> Start Competition
-                                                </a>
-                                            </li>
-                                            {% endif %}
-                                        </ul>
-                                    </div>
+                            <div class="flex-grow-1">
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}" style="color: var(--primary-green); text-decoration: none;">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Competitions</li>
+                </ol>
+            </nav>
+            
+            <!-- Header with Stats -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2 class="mb-1" style="color: #1a2e35;">Competitions Management</h2>
+                    <p class="text-muted">Manage and monitor all sports competitions</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ path('app_admin_competition_new') }}" class="btn btn-success rounded-pill px-4" style="background: var(--primary-green); border: none;">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Competition
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-white-50 mb-2">Total Competitions</h6>
+                                    <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">{{ competitions|length }}</h2>
+                                </div>
+                                <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                    <i class="fas fa-trophy text-white" style="font-size: 1.5rem;"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-white-50 mb-2">Upcoming</h6>
+                                    <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">{{ competitions|filter(c => c.status == 'upcoming')|length }}</h2>
+                                </div>
+                                <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                    <i class="fas fa-clock text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #4ac29a 0%, #bdfff3 100%);">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-white-50 mb-2">Ongoing</h6>
+                                    <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">{{ competitions|filter(c => c.status == 'ongoing')|length }}</h2>
+                                </div>
+                                <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                    <i class="fas fa-play text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #5f2c82 0%, #49a09d 100%);">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-white-50 mb-2">Completed</h6>
+                                    <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">{{ competitions|filter(c => c.status == 'completed')|length }}</h2>
+                                </div>
+                                <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                    <i class="fas fa-check-circle text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="input-group" style="border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <span class="input-group-text bg-white border-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-0" placeholder="Search competitions by name or location..." id="competitionSearch" style="padding: 12px;">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select border-0 shadow-sm" id="statusFilter" style="border-radius: 12px; padding: 12px;">
+                        <option value="">All Statuses</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Competitions Table -->
+            {% if competitions is empty %}
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-body text-center py-5">
+                        <div class="empty-state">
+                            <i class="fas fa-trophy fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No competitions found</h5>
+                            <p class="text-muted small mb-4">Get started by creating your first competition</p>
+                            <a href="{{ path('app_admin_competition_new') }}" class="btn btn-success rounded-pill px-4" style="background: var(--primary-green); border: none;">
+                                <i class="fas fa-plus-circle me-2"></i>Create Competition
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="competitionsTable">
+                            <thead style="background: #f8f9fa;">
+                                <tr>
+                                    <th class="py-3 px-4" style="width: 50px;">ID</th>
+                                    <th class="py-3" style="min-width: 200px;">Competition</th>
+                                    <th class="py-3" style="min-width: 180px;">Date</th>
+                                    <th class="py-3">Location</th>
+                                    <th class="py-3">Participants</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Winner</th>
+                                    <th class="py-3 px-4" style="width: 150px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for competition in competitions %}
+                                <tr class="competition-row" data-status="{{ competition.status|lower }}">
+                                    <td class="px-4">
+                                        <span class="badge bg-light text-dark py-2 px-3 rounded-pill">
+                                            #{{ competition.id }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if competition.image %}
+                                                <div class="me-3" style="width: 48px; height: 48px; border-radius: 8px; overflow: hidden;">
+                                                    <img src="{{ asset('uploads/competitions/' ~ competition.image) }}" 
+                                                         alt="{{ competition.name }}"
+                                                         style="width: 100%; height: 100%; object-fit: cover;">
+                                                </div>
+                                            {% else %}
+                                                <div class="me-3 d-flex align-items-center justify-content-center" 
+                                                     style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                                                    <i class="fas fa-trophy" style="color: var(--primary-green);"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ competition.name }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span><i class="far fa-calendar-alt me-2" style="color: var(--primary-green);"></i>{{ competition.startDate|date('M d, Y') }}</span>
+                                            <span class="small text-muted">{{ competition.startDate|date('H:i') }} - {{ competition.endDate|date('H:i') }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span><i class="fas fa-map-marker-alt me-2" style="color: var(--primary-green);"></i>{{ competition.location }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">
+                                                <span class="fw-bold">{{ competition.applications|length }}</span>/{{ competition.maxParticipants }}
+                                            </div>
+                                            {% set percentage = (competition.applications|length / competition.maxParticipants * 100)|round %}
+                                            <div class="progress" style="width: 60px; height: 6px;">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {{ percentage }}%; background: var(--primary-green);"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% set statusColors = {
+                                            'upcoming': 'warning',
+                                            'ongoing': 'success',
+                                            'completed': 'secondary',
+                                            'cancelled': 'danger'
+                                        } %}
+                                        <span class="badge bg-{{ statusColors[competition.status|lower]|default('secondary') }} rounded-pill px-3 py-2">
+                                            {{ competition.status|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if competition.winner %}
+                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                                                <i class="fas fa-crown me-2"></i>{{ competition.winner }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4">
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ path('app_admin_competition_applications', {'id': competition.id}) }}" 
+                                               class="btn btn-sm btn-outline-primary rounded-start-pill px-3"
+                                               title="View Applications">
+                                                <i class="fas fa-list"></i>
+                                            </a>
+                                            <a href="{{ path('app_admin_competition_edit', {'id': competition.id}) }}" 
+                                               class="btn btn-sm btn-outline-secondary px-3"
+                                               title="Edit Competition">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="post" action="{{ path('app_admin_competition_delete', {'id': competition.id}) }}" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this competition?');"
+                                                  style="display: inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ competition.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-end-pill px-3" title="Delete Competition">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             {% endif %}
         </div>
-    </div>
+    </main>
 </div>
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.admin-wrapper {
+    position: relative;
+}
+
+.admin-sidebar {
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+
+.admin-sidebar.collapsed {
+    width: 80px !important;
+}
+
+.admin-sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+.admin-sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 12px !important;
+}
+
+.admin-sidebar.collapsed .nav-link i {
+    margin-right: 0 !important;
+}
+
+.admin-sidebar.collapsed .badge {
+    display: none;
+}
+
+.admin-sidebar.collapsed .admin-profile {
+    justify-content: center;
+}
+
+.admin-sidebar.collapsed .admin-profile .avatar {
+    margin-right: 0 !important;
+}
+
+#mainContent.expanded {
+    margin-left: 80px !important;
+    width: calc(100% - 80px) !important;
+}
+
+.nav-link {
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.nav-link.active {
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.competition-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.competition-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+}
+
+/* Custom scrollbar */
+.admin-main::-webkit-scrollbar {
+    width: 8px;
+}
+
+.admin-main::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.admin-main::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+}
+
+.admin-main::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+}
+
+/* Hide navbar from base template if any */
+.navbar, header, .top-navbar {
+    display: none !important;
+}
+
+.empty-state {
+    padding: 3rem;
+}
+</style>
+
+<!-- Add Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+// Sidebar toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    // Check local storage for sidebar state
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+        toggleIcon.classList.remove('fa-chevron-left');
+        toggleIcon.classList.add('fa-chevron-right');
+    }
+    
+    toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        
+        if (sidebar.classList.contains('collapsed')) {
+            toggleIcon.classList.remove('fa-chevron-left');
+            toggleIcon.classList.add('fa-chevron-right');
+            localStorage.setItem('sidebarCollapsed', 'true');
+        } else {
+            toggleIcon.classList.remove('fa-chevron-right');
+            toggleIcon.classList.add('fa-chevron-left');
+            localStorage.setItem('sidebarCollapsed', 'false');
+        }
+    });
+
+    // User submenu toggle
+    const userMenuLink = document.querySelector('.nav-link[href*="app_admin"] .fa-chevron-down')?.parentElement;
+    if (userMenuLink) {
+        userMenuLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('userSubmenu');
+            const arrow = document.getElementById('userMenuArrow');
+            
+            if (submenu.style.display === 'none' || !submenu.style.display) {
+                submenu.style.display = 'block';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                submenu.style.display = 'none';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        });
+    }
+
+    // Search functionality
+    const searchInput = document.getElementById('competitionSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const competitionItems = document.querySelectorAll('.competition-item');
+
+    function filterCompetitions() {
+        const searchTerm = searchInput?.value.toLowerCase() || '';
+        const statusValue = statusFilter?.value.toLowerCase() || '';
+
+        competitionItems.forEach(item => {
+            const title = item.querySelector('.card-title')?.textContent.toLowerCase() || '';
+            const location = item.querySelector('.fa-map-marker-alt')?.parentElement.textContent.toLowerCase() || '';
+            const status = item.dataset.status.toLowerCase();
+            
+            const matchesSearch = title.includes(searchTerm) || location.includes(searchTerm);
+            const matchesStatus = !statusValue || status === statusValue;
+            
+            item.style.display = matchesSearch && matchesStatus ? '' : 'none';
+        });
+    }
+
+    searchInput?.addEventListener('keyup', filterCompetitions);
+    statusFilter?.addEventListener('change', filterCompetitions);
+});
+</script>
 {% endblock %}

@@ -79,113 +79,18 @@
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
-    <div class="container">
-        <a class="navbar-brand" href="{{ path('app_dashboard') }}">
-            <strong>Sports Management</strong>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                {% if app.user %}
-                    {% if app.user.roleType == 'admin' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_admin') }}">Admin Panel</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_admin_competitions') }}">
-                                <i class="fas fa-trophy"></i> Competitions
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_dashboard') }}">Dashboard</a>
-                        </li>
-                    {% elseif app.user.roleType == 'coach' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_coach_dashboard') }}">Coach Dashboard</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="coachDropdown" role="button" data-bs-toggle="dropdown">
-                                Nutrition Plans
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ path('app_coach_nutrition_plan_new') }}">Create New Plan</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_coach_dashboard') }}">View My Plans</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="mealsDropdown" role="button" data-bs-toggle="dropdown">
-                                Meals
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ path('app_coach_meal_new') }}">Add New Meal</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_coach_dashboard') }}">View All Meals</a></li>
-                            </ul>
-                        </li>
-                    {% elseif app.user.roleType == 'athlete' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_athlete_dashboard') }}">Athlete Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_athlete_nutrition_plans') }}">Nutrition Plans</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_athlete_meals') }}">Meals</a>
-                        </li>
-                    {% endif %}
-                {% endif %}
-            </ul>
-            
-            <ul class="navbar-nav ms-auto">
-                {% if app.user %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            {{ app.user.name }}
-                            <span class="role-badge ms-2">{{ app.user.roleType|capitalize }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ path('app_dashboard') }}">Main Dashboard</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Logout</a></li>
-                        </ul>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_login') }}">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_register') }}">Register</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-</nav>
-
+    
+        
     <main>
-        <div class="container">
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-            
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-error alert-dismissible fade show mt-3" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-            
-            {% block body %}{% endblock %}
-        </div>
+        <!-- REMOVED the container div from here - now it's up to each page to define its own layout -->
+        {% block body %}{% endblock %}
     </main>
 
     <!-- Bootstrap 5 JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     {% block javascripts %}{% endblock %}
 </body>

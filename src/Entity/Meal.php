@@ -48,23 +48,20 @@ class Meal
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
-    // Meal time (breakfast, lunch, dinner, snack)
     #[ORM\Column(length: 50)]
     #[Assert\Choice(['breakfast', 'lunch', 'dinner', 'snack'])]
     private ?string $mealTime = 'lunch';
 
-    // Day of week (1-7 for Monday-Sunday)
     #[ORM\Column(nullable: true)]
     #[Assert\Range(min: 1, max: 7)]
     private ?int $dayOfWeek = null;
 
-    // Relationship with User (coach)
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'meals')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $coach = null;
 
-    // Relationship with NutritionPlan (ManyToMany)
-    #[ORM\ManyToMany(targetEntity: NutritionPlan::class, mappedBy: 'meals')]
+    // FIX: Changed mappedBy to inversedBy since Meal is the owning side in this relationship
+    #[ORM\ManyToMany(targetEntity: NutritionPlan::class, inversedBy: 'meals', cascade: ['persist'])]
     private Collection $nutritionPlans;
 
     public function __construct()
@@ -86,7 +83,6 @@ class Meal
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -98,7 +94,6 @@ class Meal
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -110,7 +105,6 @@ class Meal
     public function setCalories(int $calories): static
     {
         $this->calories = $calories;
-
         return $this;
     }
 
@@ -122,7 +116,6 @@ class Meal
     public function setProtein(?int $protein): static
     {
         $this->protein = $protein;
-
         return $this;
     }
 
@@ -134,7 +127,6 @@ class Meal
     public function setCarbs(?int $carbs): static
     {
         $this->carbs = $carbs;
-
         return $this;
     }
 
@@ -146,7 +138,6 @@ class Meal
     public function setFat(?int $fat): static
     {
         $this->fat = $fat;
-
         return $this;
     }
 
@@ -158,7 +149,6 @@ class Meal
     public function setImage(?string $image): static
     {
         $this->image = $image;
-
         return $this;
     }
 
@@ -170,7 +160,6 @@ class Meal
     public function setCreatedAt(\DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -182,7 +171,6 @@ class Meal
     public function setMealTime(string $mealTime): static
     {
         $this->mealTime = $mealTime;
-
         return $this;
     }
 
@@ -194,7 +182,6 @@ class Meal
     public function setDayOfWeek(?int $dayOfWeek): static
     {
         $this->dayOfWeek = $dayOfWeek;
-
         return $this;
     }
 
@@ -206,7 +193,6 @@ class Meal
     public function setCoach(?User $coach): static
     {
         $this->coach = $coach;
-
         return $this;
     }
 
@@ -222,18 +208,22 @@ class Meal
     {
         if (!$this->nutritionPlans->contains($nutritionPlan)) {
             $this->nutritionPlans->add($nutritionPlan);
-            $nutritionPlan->addMeal($this);
+            // Ensure bidirectional consistency
+            if (!$nutritionPlan->getMeals()->contains($this)) {
+                $nutritionPlan->addMeal($this);
+            }
         }
-
         return $this;
     }
 
     public function removeNutritionPlan(NutritionPlan $nutritionPlan): static
     {
         if ($this->nutritionPlans->removeElement($nutritionPlan)) {
-            $nutritionPlan->removeMeal($this);
+            // Ensure bidirectional consistency
+            if ($nutritionPlan->getMeals()->contains($this)) {
+                $nutritionPlan->removeMeal($this);
+            }
         }
-
         return $this;
     }
 

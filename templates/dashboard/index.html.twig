@@ -3,146 +3,490 @@
 {% block title %}Dashboard - Sports Management{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="sidebar p-4 rounded">
-                <div class="text-center mb-4">
-                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
-                        <span style="color: var(--primary-green); font-size: 2.5rem; font-weight: bold;">
-                            {{ user.name|first|upper }}
-                        </span>
-                    </div>
-                    <h4 class="mt-3">{{ user.name }}</h4>
-                    <span class="role-badge">{{ user.roleType|capitalize }}</span>
-                    <p class="text-muted mt-2">{{ user.email }}</p>
-                </div>
-                
-                <hr>
-                
-                <nav class="nav flex-column">
-                    <a class="nav-link active" href="#" style="color: var(--primary-green);">
-                        <strong>Dashboard</strong>
-                    </a>
-                    <a class="nav-link" href="#">My Profile</a>
-                    <a class="nav-link" href="#">Settings</a>
-                    {% if user.roleType == 'admin' %}
-                        <a class="nav-link" href="#">Admin Panel</a>
-                    {% elseif user.roleType == 'coach' %}
-                        <a class="nav-link" href="#">My Athletes</a>
-                        <a class="nav-link" href="#">Training Plans</a>
-                    {% elseif user.roleType == 'athlete' %}
-                        <a class="nav-link" href="#">My Progress</a>
-                        <a class="nav-link" href="#">Workouts</a>
-                    {% endif %}
-                </nav>
-            </div>
+<div class="admin-wrapper d-flex" style="min-height: 100vh; width: 100%; margin: 0; padding: 0;">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="sidebar" style="width: 280px; background: linear-gradient(180deg, #1a2e35 0%, #0f1e24 100%); min-height: 100vh; transition: width 0.3s ease; position: fixed; left: 0; top: 0; bottom: 0; z-index: 1000; overflow-y: auto; overflow-x: hidden;">
+        <div class="sidebar-header p-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h3 class="text-white mb-0" style="font-weight: 600; white-space: nowrap;">
+                <span style="color: var(--primary-green);">⚡</span> <span class="sidebar-text">SportsPanel</span>
+            </h3>
         </div>
         
-        <!-- Main Content -->
-        <div class="col-lg-9">
+        <div class="sidebar-menu p-3">
+            <!-- User Profile -->
+            <div class="admin-profile d-flex align-items-center p-3 mb-4" style="background: rgba(255,255,255,0.05); border-radius: 12px;">
+                <div class="avatar me-3" style="width: 48px; height: 48px; background: var(--primary-green); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    {% if user.roleType == 'admin' %}
+                        <i class="fas fa-user-shield text-white" style="font-size: 1.5rem;"></i>
+                    {% elseif user.roleType == 'coach' %}
+                        <i class="fas fa-chalkboard-teacher text-white" style="font-size: 1.5rem;"></i>
+                    {% else %}
+                        <i class="fas fa-running text-white" style="font-size: 1.5rem;"></i>
+                    {% endif %}
+                </div>
+                <div class="sidebar-text" style="overflow: hidden;">
+                    <h6 class="text-white mb-1" style="white-space: nowrap;">{{ user.name }}</h6>
+                    <p class="text-white-50 small mb-0" style="white-space: nowrap;">
+                        <span class="badge" style="background: var(--primary-green); font-size: 0.7rem;">{{ user.roleType|capitalize }}</span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="nav flex-column">
+                <a href="{{ path('app_dashboard') }}" class="nav-link active d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="background: var(--primary-green); color: white;">
+                    <i class="fas fa-tachometer-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                
+                <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-user me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">My Profile</span>
+                </a>
+                
+                <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-cog me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Settings</span>
+                </a>
+                
+                {% if user.roleType == 'admin' %}
+                    <a href="{{ path('app_admin') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                        <i class="fas fa-shield-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+                        <span class="sidebar-text">Admin Panel</span>
+                    </a>
+                {% elseif user.roleType == 'coach' %}
+                    <a href="{{ path('app_coach_athletes') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                        <i class="fas fa-users me-3" style="width: 20px; flex-shrink: 0;"></i>
+                        <span class="sidebar-text">My Athletes</span>
+                    </a>
+                    <a href="{{ path('app_coach_dashboard') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                        <i class="fas fa-dumbbell me-3" style="width: 20px; flex-shrink: 0;"></i>
+                        <span class="sidebar-text">Training Plans</span>
+                    </a>
+                {% elseif user.roleType == 'athlete' %}
+                    <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                        <i class="fas fa-chart-line me-3" style="width: 20px; flex-shrink: 0;"></i>
+                        <span class="sidebar-text">My Progress</span>
+                    </a>
+                    <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                        <i class="fas fa-heartbeat me-3" style="width: 20px; flex-shrink: 0;"></i>
+                        <span class="sidebar-text">Workouts</span>
+                    </a>
+                {% endif %}
+                
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+                
+                <a href="{{ path('app_logout') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,0,0,0.2)'; this.style.color='#ff6b6b';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-sign-out-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Logout</span>
+                </a>
+            </nav>
+            
+            <div class="btn btn-sm text-white d-flex justify-content-end">
+                <button id="sidebarToggle" class="btn btn-sm text-white d-flex justify-content-end" style="background: transparent; border: none; font-size: 1.2rem;">
+                    <i class="fas fa-chevron-left" id="toggleIcon"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="mainContent" style="margin-left: 280px; width: calc(100% - 280px); background: #f8f9fa; min-height: 100vh; transition: margin-left 0.3s ease, width 0.3s ease;">
+        
+        <!-- Content Area -->
+        <div class="content-area p-4">
+            
+            <!-- Flash Messages -->
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px; border-left: 4px solid {% if type == 'success' %}var(--primary-green){% elseif type == 'error' %}#dc3545{% else %}#0dcaf0{% endif %};">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                {% if type == 'success' %}
+                                    <i class="fas fa-check-circle" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                {% elseif type == 'error' %}
+                                    <i class="fas fa-exclamation-circle" style="color: #dc3545; font-size: 1.5rem;"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle" style="color: #0dcaf0; font-size: 1.5rem;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                </ol>
+            </nav>
+            
+            <!-- Welcome Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1" style="color: #1a2e35;">Welcome back, {{ user.name }}!</h2>
+                    <p class="text-muted">
+                        {% if user.roleType == 'admin' %}
+                            Here's your administrative overview.
+                        {% elseif user.roleType == 'coach' %}
+                            Ready to guide your athletes today?
+                        {% else %}
+                            Keep pushing towards your goals!
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <span class="badge bg-light text-dark p-3 rounded-3" style="box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <i class="far fa-calendar-alt me-2" style="color: var(--primary-green);"></i>
+                        {{ "now"|date('l, F j, Y') }}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Statistics Cards (Role-specific) -->
+            <div class="row mb-4">
+                {% if user.roleType == 'admin' %}
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Total Users</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">156</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-users text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Active Today</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">42</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-clock text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #5f2c82 0%, #49a09d 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Competitions</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">8</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-trophy text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #4ac29a 0%, #bdfff3 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Reports</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">12</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-chart-bar text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% elseif user.roleType == 'coach' %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">My Athletes</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">12</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-users text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Active Plans</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">8</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-utensils text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #4ac29a 0%, #bdfff3 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Meals Library</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">24</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-bacon text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Workouts Done</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">24</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-heartbeat text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Current Streak</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">7 days</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-fire text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #4ac29a 0%, #bdfff3 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Next Goal</h6>
+                                        <h2 class="text-white mb-0" style="font-size: 1.2rem; font-weight: 700;">5kg loss</h2>
+                                    </div>
+                                    <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
+                                        <i class="fas fa-bullseye text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Personal Information & Role Tools -->
+            <div class="row mb-4">
+                <!-- Personal Information Card -->
+                <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; overflow: hidden;">
+                        <div class="card-header bg-white border-0 p-4">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle me-3" style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user-circle" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1" style="color: var(--primary-green);">Personal Information</h5>
+                                    <p class="text-muted small mb-0">Your account details</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-sm-6 mb-3">
+                                    <small class="text-muted d-block">Full Name</small>
+                                    <strong>{{ user.name }}</strong>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <small class="text-muted d-block">Email Address</small>
+                                    <strong>{{ user.email }}</strong>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <small class="text-muted d-block">Role</small>
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                                        <i class="fas fa-{% if user.roleType == 'admin' %}user-shield{% elseif user.roleType == 'coach' %}chalkboard-teacher{% else %}running{% endif %} me-2"></i>
+                                        {{ user.roleType|capitalize }}
+                                    </span>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <small class="text-muted d-block">Member Since</small>
+                                    <strong>{{ 'now'|date('F d, Y') }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role-specific Tools Card -->
+                <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; overflow: hidden;">
+                        <div class="card-header bg-white border-0 p-4">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle me-3" style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    {% if user.roleType == 'admin' %}
+                                        <i class="fas fa-shield-alt" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                    {% elseif user.roleType == 'coach' %}
+                                        <i class="fas fa-chalkboard-teacher" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                    {% else %}
+                                        <i class="fas fa-running" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h5 class="mb-1" style="color: var(--primary-green);">
+                                        {% if user.roleType == 'admin' %}
+                                            Admin Tools
+                                        {% elseif user.roleType == 'coach' %}
+                                            Coach Tools
+                                        {% else %}
+                                            Athlete Tools
+                                        {% endif %}
+                                    </h5>
+                                    <p class="text-muted small mb-0">Quick access to your features</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="list-group list-group-flush bg-transparent">
+                                {% if user.roleType == 'admin' %}
+                                    <a href="{{ path('app_admin') }}" class="list-group-item list-group-item-action d-flex align-items-center px-0 bg-transparent border-0">
+                                        <div class="icon-circle me-3" style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-users" style="color: var(--primary-green); font-size: 0.9rem;"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <strong>User Management</strong>
+                                            <p class="small text-muted mb-0">Manage system users and permissions</p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </a>
+                                    <a href="{{ path('app_admin_competitions') }}" class="list-group-item list-group-item-action d-flex align-items-center px-0 bg-transparent border-0">
+                                        <div class="icon-circle me-3" style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-trophy" style="color: var(--primary-green); font-size: 0.9rem;"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <strong>Competitions</strong>
+                                            <p class="small text-muted mb-0">Manage sports competitions</p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </a>
+                                {% elseif user.roleType == 'coach' %}
+                                    <a href="{{ path('app_coach_athletes') }}" class="list-group-item list-group-item-action d-flex align-items-center px-0 bg-transparent border-0">
+                                        <div class="icon-circle me-3" style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-users" style="color: var(--primary-green); font-size: 0.9rem;"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <strong>My Athletes</strong>
+                                            <p class="small text-muted mb-0">View and manage your athletes</p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </a>
+                                    <a href="{{ path('app_coach_nutrition_plan_new') }}" class="list-group-item list-group-item-action d-flex align-items-center px-0 bg-transparent border-0">
+                                        <div class="icon-circle me-3" style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-utensils" style="color: var(--primary-green); font-size: 0.9rem;"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <strong>Create Nutrition Plan</strong>
+                                            <p class="small text-muted mb-0">Design new meal plans</p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="#" class="list-group-item list-group-item-action d-flex align-items-center px-0 bg-transparent border-0">
+                                        <div class="icon-circle me-3" style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-chart-line" style="color: var(--primary-green); font-size: 0.9rem;"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <strong>My Progress</strong>
+                                            <p class="small text-muted mb-0">Track your fitness journey</p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action d-flex align-items-center px-0 bg-transparent border-0">
+                                        <div class="icon-circle me-3" style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-heartbeat" style="color: var(--primary-green); font-size: 0.9rem;"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <strong>Workouts</strong>
+                                            <p class="small text-muted mb-0">View your workout plans</p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
             <div class="row">
                 <div class="col-12">
-                    <h2 class="mb-4" style="color: var(--primary-green);">Welcome to Your Dashboard</h2>
-                </div>
-                
-                <!-- User Details Card -->
-                <div class="col-md-6 mb-4">
-                    <div class="card card-custom h-100">
-                        <div class="card-body">
-                            <h5 class="card-title" style="color: var(--primary-green);">Personal Information</h5>
-                            <hr>
-                            <div class="mb-3">
-                                <strong>Full Name:</strong>
-                                <p class="text-muted">{{ user.name }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <strong>Email Address:</strong>
-                                <p class="text-muted">{{ user.email }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <strong>Role:</strong>
-                                <p class="text-muted">{{ user.roleType|capitalize }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <strong>Account Created:</strong>
-                                <p class="text-muted">{{ 'now'|date('Y-m-d') }}</p>
+                    <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+                        <div class="card-header bg-white border-0 p-4">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle me-3" style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-bolt" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1" style="color: var(--primary-green);">Quick Actions</h5>
+                                    <p class="text-muted small mb-0">Frequently used tasks</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Role-specific Card -->
-                <div class="col-md-6 mb-4">
-                    <div class="card card-custom h-100">
-                        <div class="card-body">
-                            <h5 class="card-title" style="color: var(--primary-green);">
-                                {% if user.roleType == 'admin' %}
-                                    Admin Privileges
-                                {% elseif user.roleType == 'coach' %}
-                                    Coach Tools
-                                {% else %}
-                                    Athlete Dashboard
-                                {% endif %}
-                            </h5>
-                            <hr>
-                            {% if user.roleType == 'admin' %}
-                                <p>As an administrator, you have access to:</p>
-                                <ul>
-                                    <li>User Management</li>
-                                    <li>System Settings</li>
-                                    <li>Reports & Analytics</li>
-                                    <li>Database Administration</li>
-                                </ul>
-                                <a href="#" class="btn btn-primary-custom">Go to Admin Panel</a>
-                            {% elseif user.roleType == 'coach' %}
-                                <p>Welcome, Coach! Manage your team:</p>
-                                <ul>
-                                    <li>View Athlete Progress</li>
-                                    <li>Create Training Plans</li>
-                                    <li>Schedule Sessions</li>
-                                    <li>Track Performance</li>
-                                </ul>
-                                <a href="#" class="btn btn-primary-custom">Manage Athletes</a>
-                            {% else %}
-                                <p>Track your athletic journey:</p>
-                                <ul>
-                                    <li>View Your Progress</li>
-                                    <li>Access Workout Plans</li>
-                                    <li>Track Performance Metrics</li>
-                                    <li>Connect with Coaches</li>
-                                </ul>
-                                <a href="#" class="btn btn-primary-custom">View My Progress</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Quick Actions -->
-                <div class="col-12">
-                    <div class="card card-custom">
-                        <div class="card-body">
-                            <h5 class="card-title" style="color: var(--primary-green);">Quick Actions</h5>
-                            <div class="row mt-3">
-                                <div class="col-md-3 mb-3">
-                                    <a href="#" class="btn btn-outline-primary-custom w-100">
-                                        Update Profile
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-3 col-6">
+                                    <a href="#" class="btn btn-outline-success w-100 py-3 rounded-3" style="border-color: var(--primary-green); color: var(--primary-green);" onmouseover="this.style.background='var(--primary-green)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-green)';">
+                                        <i class="fas fa-user-edit d-block mb-2" style="font-size: 1.5rem;"></i>
+                                        <small>Update Profile</small>
                                     </a>
                                 </div>
-                                <div class="col-md-3 mb-3">
-                                    <a href="#" class="btn btn-outline-primary-custom w-100">
-                                        Change Password
+                                <div class="col-md-3 col-6">
+                                    <a href="#" class="btn btn-outline-success w-100 py-3 rounded-3" style="border-color: var(--primary-green); color: var(--primary-green);" onmouseover="this.style.background='var(--primary-green)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-green)';">
+                                        <i class="fas fa-key d-block mb-2" style="font-size: 1.5rem;"></i>
+                                        <small>Change Password</small>
                                     </a>
                                 </div>
-                                <div class="col-md-3 mb-3">
-                                    <a href="#" class="btn btn-outline-primary-custom w-100">
-                                        View Reports
+                                <div class="col-md-3 col-6">
+                                    <a href="#" class="btn btn-outline-success w-100 py-3 rounded-3" style="border-color: var(--primary-green); color: var(--primary-green);" onmouseover="this.style.background='var(--primary-green)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-green)';">
+                                        <i class="fas fa-chart-pie d-block mb-2" style="font-size: 1.5rem;"></i>
+                                        <small>View Reports</small>
                                     </a>
                                 </div>
-                                <div class="col-md-3 mb-3">
-                                    <a href="{{ path('app_logout') }}" class="btn btn-outline-danger w-100">
-                                        Logout
+                                <div class="col-md-3 col-6">
+                                    <a href="{{ path('app_logout') }}" class="btn btn-outline-danger w-100 py-3 rounded-3">
+                                        <i class="fas fa-sign-out-alt d-block mb-2" style="font-size: 1.5rem;"></i>
+                                        <small>Logout</small>
                                     </a>
                                 </div>
                             </div>
@@ -151,6 +495,181 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 </div>
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.admin-wrapper {
+    position: relative;
+}
+
+.admin-sidebar {
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+
+.admin-sidebar.collapsed {
+    width: 80px !important;
+}
+
+.admin-sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+.admin-sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 12px !important;
+}
+
+.admin-sidebar.collapsed .nav-link i {
+    margin-right: 0 !important;
+}
+
+.admin-sidebar.collapsed .badge {
+    display: none;
+}
+
+.admin-sidebar.collapsed .admin-profile {
+    justify-content: center;
+}
+
+.admin-sidebar.collapsed .admin-profile .avatar {
+    margin-right: 0 !important;
+}
+
+#mainContent.expanded {
+    margin-left: 80px !important;
+    width: calc(100% - 80px) !important;
+}
+
+.nav-link {
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.nav-link.active {
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.avatar-circle {
+    transition: transform 0.3s;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.1);
+}
+
+.icon-circle {
+    transition: transform 0.3s;
+}
+
+.icon-circle:hover {
+    transform: scale(1.1);
+}
+
+/* Custom scrollbar */
+.admin-main::-webkit-scrollbar {
+    width: 8px;
+}
+
+.admin-main::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.admin-main::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+}
+
+.admin-main::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+}
+
+/* Hide navbar from base template if any */
+.navbar, header, .top-navbar {
+    display: none !important;
+}
+
+.empty-state {
+    padding: 3rem;
+}
+
+/* List group styling */
+.list-group-item {
+    transition: all 0.3s ease;
+}
+
+.list-group-item:hover {
+    transform: translateX(5px);
+}
+
+.list-group-item:hover .icon-circle {
+    background: var(--primary-green) !important;
+}
+
+.list-group-item:hover .icon-circle i {
+    color: white !important;
+}
+</style>
+
+<!-- Add Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+// Sidebar toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    // Check local storage for sidebar state
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+        toggleIcon.classList.remove('fa-chevron-left');
+        toggleIcon.classList.add('fa-chevron-right');
+    }
+    
+    toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        
+        if (sidebar.classList.contains('collapsed')) {
+            toggleIcon.classList.remove('fa-chevron-left');
+            toggleIcon.classList.add('fa-chevron-right');
+            localStorage.setItem('sidebarCollapsed', 'true');
+        } else {
+            toggleIcon.classList.remove('fa-chevron-right');
+            toggleIcon.classList.add('fa-chevron-left');
+            localStorage.setItem('sidebarCollapsed', 'false');
+        }
+    });
+});
+
+function toggleSubmenu(event, submenuId) {
+    event.preventDefault();
+    const submenu = document.getElementById(submenuId);
+    const arrow = submenuId === 'nutritionSubmenu' ? document.getElementById('nutritionMenuArrow') : document.getElementById('mealsMenuArrow');
+    
+    if (submenu.style.display === 'none' || !submenu.style.display) {
+        submenu.style.display = 'block';
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        submenu.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+</script>
 {% endblock %}
