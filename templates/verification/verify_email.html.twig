@@ -1,0 +1,347 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Verify Your Email{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --primary-green: #10b981;
+        --primary-dark: #059669;
+        --primary-light: #d1fae5;
+    }
+    
+    .verify-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .verify-page::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 600px;
+        height: 600px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite;
+    }
+    
+    .verify-page::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        animation: float 10s ease-in-out infinite reverse;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-30px) rotate(5deg); }
+    }
+    
+    .verify-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 30px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        z-index: 10;
+        animation: slideUp 0.8s ease;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .verify-header {
+        background: linear-gradient(135deg, var(--primary-green) 0%, #3b82f6 100%);
+        padding: 40px 30px;
+        text-align: center;
+        color: white;
+        clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+    }
+    
+    .verify-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .verify-header p {
+        opacity: 0.95;
+        font-size: 0.95rem;
+    }
+    
+    .verify-body {
+        padding: 40px 30px;
+    }
+    
+    .email-display {
+        background: #f3f4f6;
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        text-align: center;
+        border-left: 4px solid var(--primary-green);
+    }
+    
+    .email-display strong {
+        color: var(--primary-green);
+        font-size: 1.05rem;
+    }
+    
+    .code-input {
+        border: 2px solid #e5e7eb;
+        border-radius: 15px;
+        height: 70px;
+        padding: 15px;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 8px;
+        text-align: center;
+        font-family: 'Courier New', monospace;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .code-input:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        outline: none;
+    }
+    
+    .btn-verify {
+        background: linear-gradient(135deg, var(--primary-green) 0%, #3b82f6 100%);
+        color: white;
+        border: none;
+        border-radius: 15px;
+        padding: 15px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+    }
+    
+    .btn-verify:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    .divider {
+        text-align: center;
+        margin: 25px 0;
+        position: relative;
+        color: #9ca3af;
+    }
+    
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e5e7eb;
+    }
+    
+    .divider span {
+        background: white;
+        padding: 0 10px;
+        position: relative;
+        font-size: 0.9rem;
+    }
+    
+    .alert-custom {
+        border: none;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        font-size: 0.95rem;
+    }
+    
+    .alert-info-custom {
+        background: #d1fae5;
+        color: #047857;
+        border-left: 4px solid var(--primary-green);
+    }
+    
+    .alert-error-custom {
+        background: #fee2e2;
+        color: #991b1b;
+        border-left: 4px solid #dc2626;
+    }
+    
+    .alert-success-custom {
+        background: #d1fae5;
+        color: #047857;
+        border-left: 4px solid var(--primary-green);
+    }
+    
+    .resend-link {
+        text-align: center;
+        margin-top: 15px;
+    }
+    
+    .resend-link form {
+        display: inline;
+    }
+    
+    .btn-resend {
+        background: transparent;
+        color: var(--primary-green);
+        border: 2px solid var(--primary-green);
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+    
+    .btn-resend:hover {
+        background: var(--primary-green);
+        color: white;
+    }
+    
+    .footer-link {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .footer-link a {
+        color: var(--primary-green);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .footer-link a:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+    
+    .timer {
+        color: #ef4444;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="verify-page">
+    <div class="verify-card">
+        <div class="verify-header">
+            <h1><i class="fas fa-envelope-open-text"></i></h1>
+            <h1>Verify Email</h1>
+            <p>Confirm your email to activate your account</p>
+        </div>
+        
+        <div class="verify-body">
+            {% if app.flashes('error') %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-custom alert-error-custom">
+                        <i class="fas fa-exclamation-circle"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if app.flashes('success') %}
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-custom alert-success-custom">
+                        <i class="fas fa-check-circle"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="email-display">
+                <small style="color: #6b7280;">Verification code sent to</small>
+                <p style="margin: 5px 0;">{{ email }}</p>
+            </div>
+
+            <form method="post" novalidate>
+                <div class="mb-3">
+                    <label for="verification_code" class="form-label" style="color: #374151; font-weight: 600; margin-bottom: 10px; display: block;">
+                        <i class="fas fa-key"></i> 8-Character Code
+                    </label>
+                    <input 
+                        type="text" 
+                        class="code-input" 
+                        id="verification_code" 
+                        name="verification_code"
+                        placeholder="ABC12345"
+                        maxlength="8"
+                        autocomplete="off"
+                        autofocus
+                        required>
+                    <small class="text-muted d-block" style="color: #9ca3af;">
+                        Check your email inbox (or spam folder) for the 8-character code
+                    </small>
+                </div>
+
+                <button type="submit" class="btn-verify">
+                    <i class="fas fa-check"></i> Verify Email
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>No code received?</span>
+            </div>
+
+            <div class="resend-link">
+                <form method="post" action="{{ path('app_resend_verification') }}">
+                    <button type="submit" class="btn-resend">
+                        <i class="fas fa-redo"></i> Resend Code
+                    </button>
+                </form>
+            </div>
+
+            <div class="footer-link">
+                <small style="color: #9ca3af;">
+                    <i class="fas fa-info-circle"></i> Code expires in 1 hour
+                </small>
+                <br><br>
+                Already have an account? <a href="{{ path('app_login') }}">Login here</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const codeInput = document.getElementById('verification_code');
+    
+    codeInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+});
+</script>
+{% endblock %}

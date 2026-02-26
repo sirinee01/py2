@@ -1,0 +1,322 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create New Support Ticket{% endblock %}
+
+{% block body %}
+<div class="admin-wrapper d-flex" style="min-height: 100vh; width: 100%; margin: 0; padding: 0;">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="sidebar" style="width: 280px; background: linear-gradient(180deg, #1a2e35 0%, #0f1e24 100%); min-height: 100vh; transition: width 0.3s ease; position: fixed; left: 0; top: 0; bottom: 0; z-index: 1000; overflow-y: auto; overflow-x: hidden;">
+        <div class="sidebar-header p-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h3 class="text-white mb-0" style="font-weight: 600; white-space: nowrap;">
+                <span style="color: var(--primary-green);">⚡</span> <span class="sidebar-text">SportsPanel</span>
+            </h3>
+        </div>
+        
+        <div class="sidebar-menu p-3">
+            <!-- User Profile -->
+            <div class="admin-profile d-flex align-items-center p-3 mb-4" style="background: rgba(255,255,255,0.05); border-radius: 12px;">
+                <div class="avatar me-3" style="width: 48px; height: 48px; background: var(--primary-green); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-running text-white" style="font-size: 1.5rem;"></i>
+                </div>
+                <div class="sidebar-text" style="overflow: hidden;">
+                    <h6 class="text-white mb-1" style="white-space: nowrap;">{{ user.name }}</h6>
+                    <p class="text-white-50 small mb-0" style="white-space: nowrap;">
+                        <span class="badge" style="background: var(--primary-green); font-size: 0.7rem;">{{ user.roleType|capitalize }}</span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="nav flex-column">
+                <a href="{{ path('app_dashboard') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-tachometer-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                
+                <a href="{{ path('chatbot') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-robot me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">AI Assistant</span>
+                </a>
+
+                <a href="{{ path('app_support_index') }}" class="nav-link active d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="background: var(--primary-green); color: white;">
+                    <i class="fas fa-headset me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Support</span>
+                </a>
+                
+                <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-cog me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Settings</span>
+                </a>
+                
+                <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-chart-line me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">My Progress</span>
+                </a>
+                <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-heartbeat me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Workouts</span>
+                </a>
+                
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+                
+                <a href="{{ path('app_logout') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,0,0,0.2)'; this.style.color='#ff6b6b';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-sign-out-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+                    <span class="sidebar-text">Logout</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="mainContent" style="margin-left: 280px; width: calc(100% - 280px); background: #f8f9fa; min-height: 100vh; transition: margin-left 0.3s ease, width 0.3s ease;">
+        <div class="content-area p-4">
+            <!-- Flash Messages -->
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px; border-left: 4px solid {% if type == 'success' %}var(--primary-green){% elseif type == 'error' %}#dc3545{% else %}#0dcaf0{% endif %};">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                {% if type == 'success' %}
+                                    <i class="fas fa-check-circle" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+                                {% elseif type == 'error' %}
+                                    <i class="fas fa-exclamation-circle" style="color: #dc3545; font-size: 1.5rem;"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle" style="color: #0dcaf0; font-size: 1.5rem;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('app_support_index') }}">Support</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">New Ticket</li>
+                </ol>
+            </nav>
+
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1" style="color: #1a2e35;">
+                        <i class="fas fa-plus-circle me-2" style="color: var(--primary-green);"></i>
+                        Create New Ticket
+                    </h2>
+                    <p class="text-muted">Tell us how we can help you</p>
+                </div>
+                <a href="{{ path('app_support_index') }}" style="color: var(--primary-green); text-decoration: none; font-weight: 500;">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Tickets
+                </a>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; max-width: 700px;">
+                <div class="card-body p-5">
+                    <form method="POST" action="">
+                        <!-- Type Selection -->
+                        <div class="mb-4">
+                            <label class="form-label" style="color: #1a2e35; font-weight: 600; font-size: 0.95rem;">
+                                <i class="fas fa-tag me-2" style="color: var(--primary-green);"></i>
+                                Type of Request
+                            </label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check" style="cursor: pointer;">
+                                        <input type="radio" class="form-check-input" id="typeMessage" name="type" value="message" checked style="cursor: pointer; width: 20px; height: 20px; accent-color: var(--primary-green);">
+                                        <label class="form-check-label ms-3" for="typeMessage" style="cursor: pointer;">
+                                            <strong style="color: #1a2e35;">Message</strong>
+                                            <br>
+                                            <small class="text-muted">General inquiry or question</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check" style="cursor: pointer;">
+                                        <input type="radio" class="form-check-input" id="typeReclamation" name="type" value="reclamation" style="cursor: pointer; width: 20px; height: 20px; accent-color: var(--primary-green);">
+                                        <label class="form-check-label ms-3" for="typeReclamation" style="cursor: pointer;">
+                                            <strong style="color: #1a2e35;">Reclamation</strong>
+                                            <br>
+                                            <small class="text-muted">Issue or complaint</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label for="title" class="form-label" style="color: #1a2e35; font-weight: 600; font-size: 0.95rem;">
+                                <i class="fas fa-heading me-2" style="color: var(--primary-green);"></i>
+                                Subject
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="title" 
+                                   name="title" 
+                                   placeholder="Brief subject of your message" 
+                                   required
+                                   maxlength="255"
+                                   style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; font-size: 0.95rem;">
+                            <small class="text-muted d-block mt-2">
+                                <span id="titleCounter">0</span>/255 characters
+                            </small>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="mb-4">
+                            <label for="content" class="form-label" style="color: #1a2e35; font-weight: 600; font-size: 0.95rem;">
+                                <i class="fas fa-message me-2" style="color: var(--primary-green);"></i>
+                                Details
+                            </label>
+                            <textarea class="form-control" 
+                                      id="content" 
+                                      name="content" 
+                                      rows="8" 
+                                      placeholder="Provide detailed information about your request..." 
+                                      required
+                                      style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; font-size: 0.95rem; font-family: inherit;"
+                                      minlength="10"></textarea>
+                            <small class="text-muted d-block mt-2">
+                                Minimum 10 characters required
+                            </small>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div class="alert alert-info border-0" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); border-radius: 10px; border-left: 4px solid var(--primary-green); color: #047857;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Pro tip:</strong> Be as specific as possible in your message. Include relevant details that will help us respond faster.
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex gap-3 mt-5">
+                            <button type="submit" class="btn btn-lg flex-grow-1" style="background: linear-gradient(135deg, var(--primary-green) 0%, #059669 100%); color: white; border-radius: 10px; border: none; font-weight: 600; padding: 12px 24px;">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Ticket
+                            </button>
+                            <a href="{{ path('app_support_index') }}" class="btn btn-lg" style="background: #f3f4f6; color: #6b7280; border-radius: 10px; border: none; font-weight: 600; padding: 12px 24px; text-decoration: none;">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #f8f9fa;
+}
+
+.admin-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.form-control:focus {
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.15) !important;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .admin-sidebar {
+        position: fixed;
+        left: -280px;
+    }
+
+    .admin-sidebar.show {
+        left: 0;
+    }
+
+    .admin-main {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .sidebar-text {
+        display: none;
+    }
+
+    .admin-sidebar.show .sidebar-text {
+        display: inline;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            mainContent.classList.toggle('sidebar-collapsed');
+        });
+    }
+
+    // Close sidebar on mobile when a link is clicked
+    const navLinks = sidebar.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('show');
+            }
+        });
+    });
+
+    // Title counter
+    const titleInput = document.getElementById('title');
+    if (titleInput) {
+        titleInput.addEventListener('input', function() {
+            document.getElementById('titleCounter').textContent = this.value.length;
+        });
+    }
+});
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}

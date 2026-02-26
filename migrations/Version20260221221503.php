@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260216235913 extends AbstractMigration
+final class Version20260221221503 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -25,7 +25,9 @@ final class Version20260216235913 extends AbstractMigration
         $this->addSql('CREATE TABLE meal (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, description LONGTEXT NOT NULL, calories INT NOT NULL, protein INT DEFAULT NULL, carbs INT DEFAULT NULL, fat INT DEFAULT NULL, image VARCHAR(500) DEFAULT NULL, created_at DATETIME NOT NULL, meal_time VARCHAR(50) NOT NULL, day_of_week INT DEFAULT NULL, coach_id INT NOT NULL, INDEX IDX_9EF68E9C3C105691 (coach_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE meal_nutrition_plan (meal_id INT NOT NULL, nutrition_plan_id INT NOT NULL, INDEX IDX_1274435F639666D6 (meal_id), INDEX IDX_1274435F113D03C9 (nutrition_plan_id), PRIMARY KEY(meal_id, nutrition_plan_id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE nutrition_plan (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, description LONGTEXT NOT NULL, duration INT NOT NULL, objective LONGTEXT NOT NULL, created_at DATETIME NOT NULL, daily_water_intake INT DEFAULT NULL, coach_id INT NOT NULL, INDEX IDX_F660B5EE3C105691 (coach_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
-        $this->addSql('CREATE TABLE `user` (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, name VARCHAR(100) NOT NULL, role_type VARCHAR(50) NOT NULL, created_at DATETIME NOT NULL, water_intake JSON DEFAULT NULL, assigned_nutrition_plan_id INT DEFAULT NULL, UNIQUE INDEX UNIQ_8D93D649E7927C74 (email), INDEX IDX_8D93D649AD9AC3CA (assigned_nutrition_plan_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
+        $this->addSql('CREATE TABLE ticket (id INT AUTO_INCREMENT NOT NULL, title VARCHAR(255) NOT NULL, content LONGTEXT NOT NULL, type VARCHAR(50) NOT NULL, status VARCHAR(50) NOT NULL, created_at DATETIME NOT NULL, updated_at DATETIME DEFAULT NULL, athlete_id INT NOT NULL, admin_id INT DEFAULT NULL, INDEX IDX_97A0ADA3FE6BCB8B (athlete_id), INDEX IDX_97A0ADA3642B8210 (admin_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
+        $this->addSql('CREATE TABLE ticket_reply (id INT AUTO_INCREMENT NOT NULL, content LONGTEXT NOT NULL, created_at DATETIME NOT NULL, ticket_id INT NOT NULL, admin_id INT NOT NULL, INDEX IDX_D598A56B700047D2 (ticket_id), INDEX IDX_D598A56B642B8210 (admin_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
+        $this->addSql('CREATE TABLE `user` (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, name VARCHAR(100) NOT NULL, role_type VARCHAR(50) NOT NULL, created_at DATETIME NOT NULL, water_intake JSON DEFAULT NULL, is_verified TINYINT(1) DEFAULT 0 NOT NULL, verification_code VARCHAR(255) DEFAULT NULL, verification_code_expires_at DATETIME DEFAULT NULL, password_reset_code VARCHAR(255) DEFAULT NULL, password_reset_code_expires_at DATETIME DEFAULT NULL, assigned_nutrition_plan_id INT DEFAULT NULL, UNIQUE INDEX UNIQ_8D93D649E7927C74 (email), INDEX IDX_8D93D649AD9AC3CA (assigned_nutrition_plan_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL, available_at DATETIME NOT NULL, delivered_at DATETIME DEFAULT NULL, INDEX IDX_75EA56E0FB7336F0E3BD61CE16BA31DBBF396750 (queue_name, available_at, delivered_at, id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('ALTER TABLE competition ADD CONSTRAINT FK_B50A2CB1876C4DDA FOREIGN KEY (organizer_id) REFERENCES `user` (id)');
         $this->addSql('ALTER TABLE competition_application ADD CONSTRAINT FK_8CFA72BFFE6BCB8B FOREIGN KEY (athlete_id) REFERENCES `user` (id)');
@@ -34,6 +36,10 @@ final class Version20260216235913 extends AbstractMigration
         $this->addSql('ALTER TABLE meal_nutrition_plan ADD CONSTRAINT FK_1274435F639666D6 FOREIGN KEY (meal_id) REFERENCES meal (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE meal_nutrition_plan ADD CONSTRAINT FK_1274435F113D03C9 FOREIGN KEY (nutrition_plan_id) REFERENCES nutrition_plan (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE nutrition_plan ADD CONSTRAINT FK_F660B5EE3C105691 FOREIGN KEY (coach_id) REFERENCES `user` (id)');
+        $this->addSql('ALTER TABLE ticket ADD CONSTRAINT FK_97A0ADA3FE6BCB8B FOREIGN KEY (athlete_id) REFERENCES `user` (id)');
+        $this->addSql('ALTER TABLE ticket ADD CONSTRAINT FK_97A0ADA3642B8210 FOREIGN KEY (admin_id) REFERENCES `user` (id)');
+        $this->addSql('ALTER TABLE ticket_reply ADD CONSTRAINT FK_D598A56B700047D2 FOREIGN KEY (ticket_id) REFERENCES ticket (id)');
+        $this->addSql('ALTER TABLE ticket_reply ADD CONSTRAINT FK_D598A56B642B8210 FOREIGN KEY (admin_id) REFERENCES `user` (id)');
         $this->addSql('ALTER TABLE `user` ADD CONSTRAINT FK_8D93D649AD9AC3CA FOREIGN KEY (assigned_nutrition_plan_id) REFERENCES nutrition_plan (id)');
     }
 
@@ -47,12 +53,18 @@ final class Version20260216235913 extends AbstractMigration
         $this->addSql('ALTER TABLE meal_nutrition_plan DROP FOREIGN KEY FK_1274435F639666D6');
         $this->addSql('ALTER TABLE meal_nutrition_plan DROP FOREIGN KEY FK_1274435F113D03C9');
         $this->addSql('ALTER TABLE nutrition_plan DROP FOREIGN KEY FK_F660B5EE3C105691');
+        $this->addSql('ALTER TABLE ticket DROP FOREIGN KEY FK_97A0ADA3FE6BCB8B');
+        $this->addSql('ALTER TABLE ticket DROP FOREIGN KEY FK_97A0ADA3642B8210');
+        $this->addSql('ALTER TABLE ticket_reply DROP FOREIGN KEY FK_D598A56B700047D2');
+        $this->addSql('ALTER TABLE ticket_reply DROP FOREIGN KEY FK_D598A56B642B8210');
         $this->addSql('ALTER TABLE `user` DROP FOREIGN KEY FK_8D93D649AD9AC3CA');
         $this->addSql('DROP TABLE competition');
         $this->addSql('DROP TABLE competition_application');
         $this->addSql('DROP TABLE meal');
         $this->addSql('DROP TABLE meal_nutrition_plan');
         $this->addSql('DROP TABLE nutrition_plan');
+        $this->addSql('DROP TABLE ticket');
+        $this->addSql('DROP TABLE ticket_reply');
         $this->addSql('DROP TABLE `user`');
         $this->addSql('DROP TABLE messenger_messages');
     }

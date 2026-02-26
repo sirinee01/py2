@@ -71,6 +71,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private array $waterIntake = [];
 
+    // Email verification fields
+    #[ORM\Column(type: Types::BOOLEAN, nullable: false, options: ['default' => 0])]
+    private bool $isVerified = false;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $verificationCode = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $verificationCodeExpiresAt = null;
+    // Password Reset fields
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $passwordResetCode = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $passwordResetCodeExpiresAt = null;
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -79,6 +94,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->organizedCompetitions = new ArrayCollection();
         $this->competitionApplications = new ArrayCollection();
         $this->waterIntake = [];
+        $this->isVerified = false;
     }
 
     public function getId(): ?int
@@ -363,5 +379,78 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
         return $approved;
+    }
+
+    // Email Verification getters and setters
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
+    public function getVerificationCode(): ?string
+    {
+        return $this->verificationCode;
+    }
+
+    public function setVerificationCode(?string $verificationCode): static
+    {
+        $this->verificationCode = $verificationCode;
+        return $this;
+    }
+
+    public function getVerificationCodeExpiresAt(): ?\DateTimeInterface
+    {
+        return $this->verificationCodeExpiresAt;
+    }
+
+    public function setVerificationCodeExpiresAt(?\DateTimeInterface $verificationCodeExpiresAt): static
+    {
+        $this->verificationCodeExpiresAt = $verificationCodeExpiresAt;
+        return $this;
+    }
+
+    public function isVerificationCodeExpired(): bool
+    {
+        if (!$this->verificationCodeExpiresAt) {
+            return true;
+        }
+        return new \DateTime() > $this->verificationCodeExpiresAt;
+    }
+
+    // Password Reset getters and setters
+    public function getPasswordResetCode(): ?string
+    {
+        return $this->passwordResetCode;
+    }
+
+    public function setPasswordResetCode(?string $passwordResetCode): static
+    {
+        $this->passwordResetCode = $passwordResetCode;
+        return $this;
+    }
+
+    public function getPasswordResetCodeExpiresAt(): ?\DateTimeInterface
+    {
+        return $this->passwordResetCodeExpiresAt;
+    }
+
+    public function setPasswordResetCodeExpiresAt(?\DateTimeInterface $passwordResetCodeExpiresAt): static
+    {
+        $this->passwordResetCodeExpiresAt = $passwordResetCodeExpiresAt;
+        return $this;
+    }
+
+    public function isPasswordResetCodeExpired(): bool
+    {
+        if (!$this->passwordResetCodeExpiresAt) {
+            return true;
+        }
+        return new \DateTime() > $this->passwordResetCodeExpiresAt;
     }
 }

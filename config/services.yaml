@@ -20,5 +20,23 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # Email Verification Service
+    App\Service\EmailVerificationService:
+        arguments:
+            $fromEmail: '%env(MAILER_FROM_EMAIL)%'
+
+    # Password Reset Service
+    App\Service\PasswordResetService:
+        arguments:
+            $fromEmail: '%env(MAILER_FROM_EMAIL)%'
+
+    # Chatbot Service
+    App\Service\ChatbotService:
+        arguments:
+            $geminiApiKey: '%env(GEMINI_API_KEY)%'
+
+    # Authentication Event Listener
+    App\EventListener\AuthenticationListener:
+        tags:
+            - { name: kernel.event_listener, event: 'security.interactive_login', method: 'onInteractiveLogin' }
+

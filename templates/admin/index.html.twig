@@ -312,8 +312,14 @@
                                     </td>
                                     <td class="px-4">
                                         <div class="btn-group" role="group">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-info rounded-start-pill px-3 view-user-details"
+                                                    data-user-id="{{ user.id }}"
+                                                    title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
                                             <a href="{{ path('app_admin_user_edit', {'id': user.id}) }}" 
-                                               class="btn btn-sm btn-outline-primary rounded-start-pill px-3"
+                                               class="btn btn-sm btn-outline-primary px-3"
                                                title="Edit User">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -359,18 +365,22 @@
             </div>
             <div class="modal-body p-4 pt-0">
                 <p class="text-muted small mb-4">Fill in the user details below</p>
-                <form>
+                <div id="addUserAlert" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
+                    <div id="addUserAlertMessage"></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <form id="addUserForm">
                     <div class="mb-3">
-                        <label for="userName" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="userName" placeholder="Enter full name">
+                        <label for="userName" class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="userName" name="name" placeholder="Enter full name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="userEmail" class="form-label">Email Address</label>
-                        <input type="email" class="form-control" id="userEmail" placeholder="Enter email">
+                        <label for="userEmail" class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="userEmail" name="email" placeholder="Enter email" required>
                     </div>
                     <div class="mb-3">
-                        <label for="userRole" class="form-label">Role</label>
-                        <select class="form-select" id="userRole">
+                        <label for="userRole" class="form-label">Role *</label>
+                        <select class="form-select" id="userRole" name="role" required>
                             <option value="athlete">Athlete</option>
                             <option value="coach">Coach</option>
                             <option value="admin">Admin</option>
@@ -380,7 +390,35 @@
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success rounded-pill px-4" style="background: var(--primary-green); border: none;">Add User</button>
+                <button type="button" class="btn btn-success rounded-pill px-4" id="addUserBtn" style="background: var(--primary-green); border: none;">
+                    <i class="fas fa-plus-circle me-2"></i>Add User
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title" id="userDetailsModalLabel" style="color: var(--primary-green);">
+                    <i class="fas fa-user-circle me-2"></i>User Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="userDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -653,6 +691,119 @@ document.addEventListener('DOMContentLoaded', function() {
         submenu.style.display = 'block';
         arrow.style.transform = 'rotate(180deg)';
     }
+});
+
+// Add User Modal functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const addUserBtn = document.getElementById('addUserBtn');
+    const addUserForm = document.getElementById('addUserForm');
+    const addUserAlert = document.getElementById('addUserAlert');
+    const addUserAlertMessage = document.getElementById('addUserAlertMessage');
+    
+    if (addUserBtn) {
+        addUserBtn.addEventListener('click', function() {
+            const formData = new FormData(addUserForm);
+            const url = '{{ path('app_admin_user_add') }}';
+            
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message and reload
+                    addUserAlert.classList.remove('d-none');
+                    addUserAlert.classList.remove('alert-danger');
+                    addUserAlert.classList.add('alert-success');
+                    addUserAlertMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + data.message;
+                    
+                    // Reset form
+                    addUserForm.reset();
+                    
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+                        location.reload();
+                    }, 2000);
+                } else {
+                    // Show error message
+                    addUserAlert.classList.remove('d-none');
+                    addUserAlert.classList.add('alert-danger');
+                    addUserAlert.classList.remove('alert-success');
+                    addUserAlertMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + data.message;
+                }
+            })
+            .catch(error => {
+                addUserAlert.classList.remove('d-none');
+                addUserAlert.classList.add('alert-danger');
+                addUserAlertMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>An error occurred: ' + error;
+            });
+        });
+    }
+    
+    // Reset alert when modal is closed
+    const addUserModal = document.getElementById('addUserModal');
+    if (addUserModal) {
+        addUserModal.addEventListener('hide.bs.modal', function() {
+            addUserAlert.classList.add('d-none');
+            addUserForm.reset();
+        });
+    }
+});
+
+// View User Details functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const userDetailsButtons = document.querySelectorAll('.view-user-details');
+    const userDetailsModal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+    const userDetailsContent = document.getElementById('userDetailsContent');
+    
+    userDetailsButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const url = '{{ path('app_admin_user_details', {'id': 'USERID'}) }}'.replace('USERID', userId);
+            
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                userDetailsContent.innerHTML = `
+                    <div class="user-details-card">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div style="width: 80px; height: 80px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white; font-size: 2rem;">
+                                ${data.name.charAt(0).toUpperCase()}
+                            </div>
+                            <h5 style="color: #1f2937; margin-bottom: 5px;">${data.name}</h5>
+                            <p style="color: #6b7280; margin: 0;">${data.email}</p>
+                        </div>
+                        
+                        <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e5e7eb;">
+                                <span style="color: #6b7280;">Role</span>
+                                <span class="badge" style="background: var(--primary-green); color: white;">
+                                    <i class="fas fa-${data.roleType === 'athlete' ? 'running' : data.roleType === 'coach' ? 'whistle' : 'user-cog'} me-2"></i>${data.roleLabel}
+                                </span>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e5e7eb;">
+                                <span style="color: #6b7280;">Member Since</span>
+                                <strong>${data.createdAt}</strong>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #6b7280;">Status</span>
+                                <span class="badge" style="background: ${data.isVerified ? '#10b981' : '#f59e0b'}; color: white;">${data.isVerified ? 'Active' : 'Pending'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                userDetailsModal.show();
+            })
+            .catch(error => {
+                userDetailsContent.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Error loading user details</div>`;
+                userDetailsModal.show();
+            });
+        });
+    });
 });
 </script>
 {% endblock %}

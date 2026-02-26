@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Service\EmailVerificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +20,8 @@ class RegistrationController extends AbstractController
         Request $request, 
         UserPasswordHasherInterface $userPasswordHasher, 
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        EmailVerificationService $emailVerificationService
     ): Response
     {
         $user = new User();
@@ -78,13 +80,31 @@ class RegistrationController extends AbstractController
 
                 // Set creation date
                 $user->setCreatedAt(new \DateTime());
+                
+                // Mark user as unverified (awaiting email verification)
+                $user->setVerified(false);
 
+                // Save user temporarily without email verification
                 $entityManager->persist($user);
                 $entityManager->flush();
 
-                $this->addFlash('success', 'Registration successful! You can now login.');
+                // Send verification email
+                try {
+                    $emailVerificationService->sendVerificationEmail($user);
+                    $entityManager->flush();
+                } catch (\Exception $e) {
+                    // Log error but don't fail registration
+                    error_log('Failed to send verification email: ' . $e->getMessage());
+                    $this->addFlash('warning', 'Registration successful but we could not send the verification email. Please contact support.');
+                    return $this->redirectToRoute('app_login');
+                }
 
-                return $this->redirectToRoute('app_login');
+                // Store email in session for verification page
+                $request->getSession()->set('pending_verification_email', $user->getEmail());
+
+                $this->addFlash('success', 'Registration successful! Please check your email for the verification code.');
+
+                return $this->redirectToRoute('app_verify_email');
 
             } catch (\RuntimeException $e) {
                 // Handle runtime exceptions (validation errors, duplicate email, etc.)
