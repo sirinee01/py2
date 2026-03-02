@@ -312,6 +312,7 @@
                                     </td>
                                     <td class="px-4">
                                         <div class="btn-group" role="group">
+<<<<<<< HEAD
                                             <button type="button" 
                                                     class="btn btn-sm btn-outline-info rounded-start-pill px-3 view-user-details"
                                                     data-user-id="{{ user.id }}"
@@ -320,6 +321,10 @@
                                             </button>
                                             <a href="{{ path('app_admin_user_edit', {'id': user.id}) }}" 
                                                class="btn btn-sm btn-outline-primary px-3"
+=======
+                                            <a href="{{ path('app_admin_user_edit', {'id': user.id}) }}" 
+                                               class="btn btn-sm btn-outline-primary rounded-start-pill px-3"
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                                                title="Edit User">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -365,6 +370,7 @@
             </div>
             <div class="modal-body p-4 pt-0">
                 <p class="text-muted small mb-4">Fill in the user details below</p>
+<<<<<<< HEAD
                 <div id="addUserAlert" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
                     <div id="addUserAlertMessage"></div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -381,6 +387,20 @@
                     <div class="mb-3">
                         <label for="userRole" class="form-label">Role *</label>
                         <select class="form-select" id="userRole" name="role" required>
+=======
+                <form>
+                    <div class="mb-3">
+                        <label for="userName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="userName" placeholder="Enter full name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="userEmail" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="userEmail" placeholder="Enter email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="userRole" class="form-label">Role</label>
+                        <select class="form-select" id="userRole">
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                             <option value="athlete">Athlete</option>
                             <option value="coach">Coach</option>
                             <option value="admin">Admin</option>
@@ -390,6 +410,7 @@
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+<<<<<<< HEAD
                 <button type="button" class="btn btn-success rounded-pill px-4" id="addUserBtn" style="background: var(--primary-green); border: none;">
                     <i class="fas fa-plus-circle me-2"></i>Add User
                 </button>
@@ -419,6 +440,9 @@
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+=======
+                <button type="button" class="btn btn-success rounded-pill px-4" style="background: var(--primary-green); border: none;">Add User</button>
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
             </div>
         </div>
     </div>
@@ -692,6 +716,7 @@ document.addEventListener('DOMContentLoaded', function() {
         arrow.style.transform = 'rotate(180deg)';
     }
 });
+<<<<<<< HEAD
 
 // Add User Modal functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -805,6 +830,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 </script>
 {% endblock %}
 

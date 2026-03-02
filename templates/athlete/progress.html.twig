@@ -1,0 +1,495 @@
+{# templates/athlete/progress.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}My Progress - Athlete{% endblock %}
+
+{% block body %}
+<div class="athlete-wrapper" style="background: #f8f9fa; min-height: 100vh;">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm px-4" style="border-bottom: 3px solid var(--primary-green);">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ path('app_athlete_dashboard') }}">
+                <span style="color: var(--primary-green); font-size: 1.8rem; font-weight: 700;">⚡</span>
+                <span class="ms-2" style="font-weight: 600; color: #1a2e35;">MyNutrition</span>
+            </a>
+            
+            <a href="{{ path('app_athlete_dashboard') }}" class="btn btn-outline-success rounded-pill">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 style="color: var(--primary-green);">My Progress Tracker</h4>
+            <button class="btn btn-success rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addProgressModal">
+                <i class="fas fa-plus-circle me-2"></i>Update Progress
+            </button>
+        </div>
+
+        <!-- Progress Overview Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Current Weight</h6>
+                        <h2 class="mb-0">{{ currentWeight|default('--') }} <small class="text-muted" style="font-size: 1rem;">kg</small></h2>
+                        {% if weightChange is defined and weightChange is not null %}
+                            <small class="text-{% if weightChange < 0 %}success{% else %}danger{% endif %}">
+                                <i class="fas fa-arrow-{% if weightChange < 0 %}down{% else %}up{% endif %} me-1"></i>
+                                {{ weightChange|abs }} kg from last week
+                            </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">BMI</h6>
+                        <h2 class="mb-0">{{ bmi|default('--') }}</h2>
+                        <small class="text-muted">{{ bmiCategory|default('Not calculated') }}</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Body Fat</h6>
+                        <h2 class="mb-0">{{ bodyFat|default('--') }}<small class="text-muted" style="font-size: 1rem;">%</small></h2>
+                        {% if bodyFatChange is defined and bodyFatChange is not null %}
+                            <small class="text-{% if bodyFatChange < 0 %}success{% else %}danger{% endif %}">
+                                <i class="fas fa-arrow-{% if bodyFatChange < 0 %}down{% else %}up{% endif %} me-1"></i>
+                                {{ bodyFatChange|abs }}% change
+                            </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">TDEE</h6>
+                        <h2 class="mb-0">{{ tdee|default('--') }} <small class="text-muted" style="font-size: 1rem;">cal</small></h2>
+                        <small class="text-muted">Daily energy expenditure</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Charts -->
+        <div class="row mb-4">
+            <div class="col-md-8 mb-3">
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4">
+                        <h5 class="mb-0" style="color: var(--primary-green);">Weight Progress</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="weightChart" style="height: 300px; width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4">
+                        <h5 class="mb-0" style="color: var(--primary-green);">Goal Progress</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        {% set goalAngle = goalProgress|default(0) * 3.6 %}
+                        <div class="progress-circle mx-auto mb-3" style="width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(var(--primary-green) {{ goalAngle }}deg, #e9ecef 0deg); display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 130px; height: 130px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center;">
+                                <span class="h2 mb-0" style="color: var(--primary-green);">{{ goalProgress|default(0) }}%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-details mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Start:</span>
+                                <span class="fw-bold">{{ startWeight|default('--') }} kg</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Current:</span>
+                                <span class="fw-bold">{{ currentWeight|default('--') }} kg</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="text-muted">Target:</span>
+                                <span class="fw-bold">{{ targetWeight|default('--') }} kg</span>
+                            </div>
+                            
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" style="width: {{ goalProgress|default(0) }}%; background: var(--primary-green);"></div>
+                            </div>
+                            
+                            {% if targetWeight and currentWeight %}
+                                {% set remaining = targetWeight - currentWeight %}
+                                <p class="text-muted small mt-3">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    {{ remaining|abs }} kg {% if remaining > 0 %}to gain{% elseif remaining < 0 %}to lose{% else %}to goal{% endif %}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nutrition Adherence -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4">
+                        <h5 class="mb-0" style="color: var(--primary-green);">Calorie Adherence (Last 7 Days)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="calorieChart" style="height: 250px; width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4">
+                        <h5 class="mb-0" style="color: var(--primary-green);">Water Intake (Last 7 Days)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="waterChart" style="height: 250px; width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress History Table -->
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-header bg-white border-0 p-4">
+                <h5 class="mb-0" style="color: var(--primary-green);">Progress History</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead style="background: #f8f9fa;">
+                            <tr>
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3">Weight</th>
+                                <th class="py-3">Body Fat</th>
+                                <th class="py-3">Muscle Mass</th>
+                                <th class="py-3">Calories</th>
+                                <th class="py-3">Water</th>
+                                <th class="py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in progressEntries %}
+                            <tr>
+                                <td class="px-4">{{ entry.recordedAt|date('M d, Y') }}</td>
+                                <td>{{ entry.weight ? entry.weight ~ ' kg' : '--' }}</td>
+                                <td>{{ entry.bodyFatPercentage ? entry.bodyFatPercentage ~ '%' : '--' }}</td>
+                                <td>{{ entry.muscleMass ? entry.muscleMass ~ ' kg' : '--' }}</td>
+                                <td>{{ entry.dailyCalorieIntake ? entry.dailyCalorieIntake ~ ' cal' : '--' }}</td>
+                                <td>{{ entry.dailyWaterIntake ? entry.dailyWaterIntake ~ ' L' : '--' }}</td>
+                                <td class="px-4">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProgressEntry({{ entry.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                        <h6 class="text-muted">No progress entries yet</h6>
+                                        <p class="text-muted small">Start tracking your progress by adding your first entry</p>
+                                        <button class="btn btn-success mt-2 rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addProgressModal">
+                                            <i class="fas fa-plus-circle me-2"></i>Add Progress Entry
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Progress Modal -->
+<div class="modal fade" id="addProgressModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title" style="color: var(--primary-green);">Update Progress</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <form id="progressForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Weight (kg)</label>
+                            <input type="number" step="0.1" class="form-control" name="weight" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Body Fat %</label>
+                            <input type="number" step="0.1" class="form-control" name="bodyFat">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Muscle Mass (kg)</label>
+                            <input type="number" step="0.1" class="form-control" name="muscleMass">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Daily Calories</label>
+                            <input type="number" class="form-control" name="calories">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Water Intake (L)</label>
+                            <input type="number" step="0.1" class="form-control" name="water">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Activity Level</label>
+                            <select class="form-select" name="activityLevel">
+                                <option value="sedentary">Sedentary</option>
+                                <option value="lightly_active">Lightly Active</option>
+                                <option value="moderately_active">Moderately Active</option>
+                                <option value="very_active">Very Active</option>
+                                <option value="extra_active">Extra Active</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Measurements (optional)</label>
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <input type="number" step="0.1" class="form-control" placeholder="Waist (cm)" name="waist">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <input type="number" step="0.1" class="form-control" placeholder="Chest (cm)" name="chest">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <input type="number" step="0.1" class="form-control" placeholder="Hips (cm)" name="hips">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <input type="number" step="0.1" class="form-control" placeholder="Arms (cm)" name="arms">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" rows="3" name="notes" placeholder="How are you feeling? Any observations?"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success rounded-pill px-4" onclick="submitProgress()" style="background: var(--primary-green); border: none;">
+                    Save Progress
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Weight Chart
+    const weightCtx = document.getElementById('weightChart').getContext('2d');
+    new Chart(weightCtx, {
+        type: 'line',
+        data: {
+            labels: {{ weightLabels|json_encode|raw }},
+            datasets: [{
+                label: 'Weight (kg)',
+                data: {{ weightData|json_encode|raw }},
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+
+    // Calorie Chart
+    const calorieCtx = document.getElementById('calorieChart').getContext('2d');
+    new Chart(calorieCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ calorieLabels|json_encode|raw }},
+            datasets: [{
+                label: 'Calories Consumed',
+                data: {{ calorieData|json_encode|raw }},
+                backgroundColor: '#10b981',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Water Chart
+    const waterCtx = document.getElementById('waterChart').getContext('2d');
+    new Chart(waterCtx, {
+        type: 'line',
+        data: {
+            labels: {{ waterLabels|json_encode|raw }},
+            datasets: [{
+                label: 'Water Intake (L)',
+                data: {{ waterData|json_encode|raw }},
+                borderColor: '#0dcaf0',
+                backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+
+function submitProgress() {
+    const formData = new FormData(document.getElementById('progressForm'));
+    const data = {
+        weight: formData.get('weight'),
+        bodyFat: formData.get('bodyFat'),
+        muscleMass: formData.get('muscleMass'),
+        calories: formData.get('calories'),
+        water: formData.get('water'),
+        activityLevel: formData.get('activityLevel'),
+        waist: formData.get('waist'),
+        chest: formData.get('chest'),
+        hips: formData.get('hips'),
+        arms: formData.get('arms'),
+        notes: formData.get('notes')
+    };
+    
+    fetch('/athlete/progress/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error saving progress');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function deleteProgressEntry(id) {
+    if (confirm('Are you sure you want to delete this progress entry?')) {
+        fetch(`/athlete/progress/${id}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+</script>
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+.athlete-wrapper {
+    background: #f8f9fa;
+}
+
+.avatar-circle {
+    transition: transform 0.3s;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.1);
+}
+
+.progress-circle {
+    transition: all 0.3s;
+}
+
+.progress {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

@@ -1,0 +1,442 @@
+{# templates/coach/chatbot.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}AI Nutrition Assistant - Coach{% endblock %}
+
+{% block body %}
+<div class="admin-wrapper d-flex" style="min-height: 100vh; width: 100%; margin: 0; padding: 0;">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="sidebar" style="width: 280px; background: linear-gradient(180deg, #1a2e35 0%, #0f1e24 100%); min-height: 100vh; transition: width 0.3s ease; position: fixed; left: 0; top: 0; bottom: 0; z-index: 1000; overflow-y: auto; overflow-x: hidden;">
+        <div class="sidebar-header p-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h3 class="text-white mb-0" style="font-weight: 600; white-space: nowrap;">
+                <span style="color: var(--primary-green);">⚡</span> <span class="sidebar-text">CoachPanel</span>
+            </h3>
+        </div>
+        
+        <div class="sidebar-menu p-3">
+            <!-- Coach Profile -->
+            <div class="admin-profile d-flex align-items-center p-3 mb-4" style="background: rgba(255,255,255,0.05); border-radius: 12px;">
+                <div class="avatar me-3" style="width: 48px; height: 48px; background: var(--primary-green); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-chalkboard-teacher text-white" style="font-size: 1.5rem;"></i>
+                </div>
+                <div class="sidebar-text" style="overflow: hidden;">
+                    <h6 class="text-white mb-1" style="white-space: nowrap;">{{ app.user.name|default('Coach') }}</h6>
+                    <p class="text-white-50 small mb-0" style="white-space: nowrap;">{{ app.user.email|default('coach@sports.com') }}</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="nav flex-column">
+                <a href="{{ path('app_coach_dashboard') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-tachometer-alt me-3" style="width: 20px;"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                
+                <a href="{{ path('app_coach_athletes') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-users me-3" style="width: 20px;"></i>
+                    <span class="sidebar-text">My Athletes</span>
+                </a>
+                
+                <!-- Nutrition Plans -->
+                <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8);" onclick="toggleSubmenu(event, 'nutritionSubmenu')" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-utensils me-3" style="width: 20px;"></i>
+                    <span class="sidebar-text flex-grow-1">Nutrition Plans</span>
+                    <i class="fas fa-chevron-down sidebar-text" id="nutritionMenuArrow" style="font-size: 0.8rem;"></i>
+                </a>
+                <div class="submenu" id="nutritionSubmenu" style="display: none; margin-left: 2.5rem; margin-bottom: 0.5rem;">
+                    <a href="{{ path('app_coach_nutrition_plan_new') }}" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        <span class="sidebar-text">Create New Plan</span>
+                    </a>
+                    <a href="{{ path('app_coach_dashboard') }}#plans" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                        <i class="fas fa-list me-2"></i>
+                        <span class="sidebar-text">View All Plans</span>
+                    </a>
+                </div>
+                
+                <!-- Meals -->
+                <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8);" onclick="toggleSubmenu(event, 'mealsSubmenu')" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-bacon me-3" style="width: 20px;"></i>
+                    <span class="sidebar-text flex-grow-1">Meals</span>
+                    <i class="fas fa-chevron-down sidebar-text" id="mealsMenuArrow" style="font-size: 0.8rem;"></i>
+                </a>
+                <div class="submenu" id="mealsSubmenu" style="display: none; margin-left: 2.5rem; margin-bottom: 0.5rem;">
+                    <a href="{{ path('app_coach_meal_new') }}" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        <span class="sidebar-text">Add New Meal</span>
+                    </a>
+                    <a href="{{ path('app_coach_dashboard') }}#meals" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                        <i class="fas fa-list me-2"></i>
+                        <span class="sidebar-text">View All Meals</span>
+                    </a>
+                </div>
+                
+                <!-- AI Assistant (New) -->
+                <a href="{{ path('app_coach_chatbot') }}" class="nav-link active d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="background: var(--primary-green); color: white;">
+                    <i class="fas fa-robot me-3" style="width: 20px;"></i>
+                    <span class="sidebar-text">AI Assistant</span>
+                </a>
+                
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+                
+                <a href="{{ path('app_logout') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8);" onmouseover="this.style.background='rgba(255,0,0,0.2)'; this.style.color='#ff6b6b';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+                    <i class="fas fa-sign-out-alt me-3"></i>
+                    <span class="sidebar-text">Logout</span>
+                </a>
+            </nav>
+            
+            <div class="btn btn-sm text-white d-flex justify-content-end">
+                <button id="sidebarToggle" class="btn btn-sm text-white d-flex justify-content-end" style="background: transparent; border: none; font-size: 1.2rem;">
+                    <i class="fas fa-chevron-left" id="toggleIcon"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="mainContent" style="margin-left: 280px; width: calc(100% - 280px); background: #f8f9fa; min-height: 100vh;">
+        <div class="content-area p-4" style="height: 100vh; overflow: hidden; display: flex; flex-direction: column;">
+            
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 style="color: var(--primary-green);"><i class="fas fa-robot me-2"></i>AI Nutrition Assistant</h4>
+                    <p class="text-muted small mb-0">Powered by Hugging Face AI - Ask me anything about nutrition, meal planning, or recipes!</p>
+                </div>
+                <button class="btn btn-outline-danger btn-sm" onclick="clearChat()">
+                    <i class="fas fa-trash me-2"></i>Clear Chat
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-container flex-grow-1 mb-4" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column;">
+                <div class="chat-messages p-4" id="chatMessages" style="flex-grow: 1; overflow-y: auto; height: 400px;">
+                    {% for message in chat_history %}
+                        <div class="message mb-4 d-flex {% if message.role == 'user' %}justify-content-end{% endif %}">
+                            {% if message.role == 'assistant' %}
+                                <div class="avatar me-3" style="width: 40px; height: 40px; background: rgba(16,185,129,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i class="fas fa-robot" style="color: var(--primary-green);"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="message-content" style="max-width: 70%;">
+                                <div class="message-bubble p-3 rounded-3" style="background: {% if message.role == 'user' %}var(--primary-green){% else %}#f8f9fa{% endif %}; color: {% if message.role == 'user' %}white{% else %}#1a2e35{% endif %}; border-radius: {% if message.role == 'user' %}18px 18px 4px 18px{% else %}18px 18px 18px 4px{% endif %};">
+                                    {{ message.content|nl2br }}
+                                </div>
+                                <small class="text-muted mt-1 d-block text-{% if message.role == 'user' %}end{% else %}start{% endif %}">
+                                    {{ message.timestamp|date('H:i') }}
+                                </small>
+                            </div>
+                            
+                            {% if message.role == 'user' %}
+                                <div class="avatar ms-3" style="width: 40px; height: 40px; background: var(--primary-green); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="quick-actions p-3 border-top">
+                    <div class="d-flex gap-2 mb-3">
+                        <button class="btn btn-outline-success btn-sm quick-action" onclick="quickAction('Generate a healthy meal idea under 500 calories')">
+                            <i class="fas fa-utensils me-1"></i>Quick Meal Idea
+                        </button>
+                        <button class="btn btn-outline-success btn-sm quick-action" onclick="quickAction('What are good high-protein breakfast options?')">
+                            <i class="fas fa-egg me-1"></i>High Protein Breakfast
+                        </button>
+                        <button class="btn btn-outline-success btn-sm quick-action" onclick="quickAction('Create a weekly meal plan for weight loss')">
+                            <i class="fas fa-calendar-alt me-1"></i>Weekly Plan
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Input Area -->
+                <div class="chat-input p-3 border-top">
+                    <div class="input-group">
+                        <select class="form-select" id="messageType" style="max-width: 140px; border-radius: 12px 0 0 12px;">
+                            <option value="text">General</option>
+                            <option value="nutrition_advice">Nutrition Advice</option>
+                            <option value="meal_idea">Meal Idea</option>
+                        </select>
+                        <input type="text" class="form-control" id="messageInput" placeholder="Ask me anything about nutrition, meals, or diet plans..." style="border-radius: 0;">
+                        <button class="btn btn-success" type="button" onclick="sendMessage()" style="background: var(--primary-green); border: none; border-radius: 0 12px 12px 0; padding: 0 20px;">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Try: "Create a keto meal plan", "High protein snacks", "Meal prep ideas", "Nutrition for athletes"
+                    </small>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+.chat-messages {
+    scroll-behavior: smooth;
+}
+
+.message-bubble {
+    position: relative;
+    word-wrap: break-word;
+}
+
+.quick-action {
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.quick-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(16,185,129,0.2);
+}
+
+/* Sidebar styles (same as before) */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.admin-wrapper {
+    position: relative;
+}
+
+.admin-sidebar {
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+
+.admin-sidebar.collapsed {
+    width: 80px !important;
+}
+
+.admin-sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+.admin-sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 12px !important;
+}
+
+.admin-sidebar.collapsed .nav-link i {
+    margin-right: 0 !important;
+}
+
+#mainContent.expanded {
+    margin-left: 80px !important;
+    width: calc(100% - 80px) !important;
+}
+
+.nav-link {
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.nav-link.active {
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+}
+
+/* Hide navbar from base template */
+.navbar, header, .top-navbar {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .quick-actions .d-flex {
+        flex-wrap: wrap;
+    }
+    
+    .quick-action {
+        flex: 1 1 auto;
+    }
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+// Sidebar toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+        toggleIcon.classList.remove('fa-chevron-left');
+        toggleIcon.classList.add('fa-chevron-right');
+    }
+    
+    toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        
+        if (sidebar.classList.contains('collapsed')) {
+            toggleIcon.classList.remove('fa-chevron-left');
+            toggleIcon.classList.add('fa-chevron-right');
+            localStorage.setItem('sidebarCollapsed', 'true');
+        } else {
+            toggleIcon.classList.remove('fa-chevron-right');
+            toggleIcon.classList.add('fa-chevron-left');
+            localStorage.setItem('sidebarCollapsed', 'false');
+        }
+    });
+
+    // Scroll to bottom of chat
+    scrollToBottom();
+});
+
+function toggleSubmenu(event, submenuId) {
+    event.preventDefault();
+    const submenu = document.getElementById(submenuId);
+    const arrow = submenuId === 'nutritionSubmenu' ? document.getElementById('nutritionMenuArrow') : document.getElementById('mealsMenuArrow');
+    
+    if (submenu.style.display === 'none' || !submenu.style.display) {
+        submenu.style.display = 'block';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+        submenu.style.display = 'none';
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const type = document.getElementById('messageType');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message to UI
+    addMessageToUI('user', message);
+    
+    // Clear input
+    input.value = '';
+    
+    // Send to server
+    fetch('{{ path('app_coach_chatbot_send') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'message': message,
+            'type': type.value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Add AI response to UI
+            addMessageToUI('assistant', data.response);
+            
+            // Scroll to bottom
+            scrollToBottom();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        addMessageToUI('assistant', 'Sorry, I encountered an error. Please try again.');
+    });
+}
+
+function addMessageToUI(role, content) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message mb-4 d-flex ${role === 'user' ? 'justify-content-end' : ''}`;
+    
+    const now = new Date();
+    const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    
+    if (role === 'assistant') {
+        messageDiv.innerHTML = `
+            <div class="avatar me-3" style="width: 40px; height: 40px; background: rgba(16,185,129,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-robot" style="color: var(--primary-green);"></i>
+            </div>
+            <div class="message-content" style="max-width: 70%;">
+                <div class="message-bubble p-3 rounded-3" style="background: #f8f9fa; color: #1a2e35; border-radius: 18px 18px 18px 4px;">
+                    ${content.replace(/\n/g, '<br>')}
+                </div>
+                <small class="text-muted mt-1 d-block">${timeString}</small>
+            </div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="message-content" style="max-width: 70%;">
+                <div class="message-bubble p-3 rounded-3" style="background: var(--primary-green); color: white; border-radius: 18px 18px 4px 18px;">
+                    ${content.replace(/\n/g, '<br>')}
+                </div>
+                <small class="text-muted mt-1 d-block text-end">${timeString}</small>
+            </div>
+            <div class="avatar ms-3" style="width: 40px; height: 40px; background: var(--primary-green); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user text-white"></i>
+            </div>
+        `;
+    }
+    
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function quickAction(message) {
+    document.getElementById('messageInput').value = message;
+    sendMessage();
+}
+
+function clearChat() {
+    if (confirm('Are you sure you want to clear the chat history?')) {
+        fetch('{{ path('app_coach_chatbot_clear') }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Enter key to send
+document.getElementById('messageInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+</script>
+{% endblock %}

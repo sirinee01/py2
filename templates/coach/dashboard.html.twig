@@ -4,7 +4,11 @@
 
 {% block body %}
 <div class="admin-wrapper d-flex" style="min-height: 100vh; width: 100%; margin: 0; padding: 0;">
+<<<<<<< HEAD
     <!-- Sidebar (same as before) -->
+=======
+    <!-- Sidebar -->
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
     <aside class="admin-sidebar" id="sidebar" style="width: 280px; background: linear-gradient(180deg, #1a2e35 0%, #0f1e24 100%); min-height: 100vh; transition: width 0.3s ease; position: fixed; left: 0; top: 0; bottom: 0; z-index: 1000; overflow-y: auto; overflow-x: hidden;">
         <div class="sidebar-header p-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
             <h3 class="text-white mb-0" style="font-weight: 600; white-space: nowrap;">
@@ -58,7 +62,11 @@
                 
                 <!-- Meals with dropdown -->
                 <div class="nav-item">
+<<<<<<< HEAD
                     <a href="#" class="nav-link active d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="background: var(--primary-green); color: white;" onclick="toggleSubmenu(event, 'mealsSubmenu')">
+=======
+                    <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="background: var(--primary-green); color: white;" onclick="toggleSubmenu(event, 'mealsSubmenu')">
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                         <i class="fas fa-bacon me-3" style="width: 20px; flex-shrink: 0;"></i>
                         <span class="sidebar-text flex-grow-1">Meals</span>
                         <i class="fas fa-chevron-down sidebar-text" id="mealsMenuArrow" style="font-size: 0.8rem; transition: transform 0.3s;"></i>
@@ -92,10 +100,120 @@
         </div>
     </aside>
 
+<<<<<<< HEAD
 
     <!-- Main Content -->
     <main class="admin-main" id="mainContent" style="margin-left: 280px; width: calc(100% - 280px); background: #f8f9fa; min-height: 100vh; transition: margin-left 0.3s ease, width 0.3s ease;">
         
+=======
+    <!-- Main Content -->
+    <main class="admin-main" id="mainContent" style="margin-left: 280px; width: calc(100% - 280px); background: #f8f9fa; min-height: 100vh; transition: margin-left 0.3s ease, width 0.3s ease;">
+        <!-- Top bar with message and notification icons -->
+        <div class="top-bar bg-white px-4 py-3 d-flex justify-content-end align-items-center shadow-sm" style="border-bottom: 1px solid #dee2e6;">
+            <div class="d-flex align-items-center gap-3">
+                <!-- Messages Icon with unread count -->
+                <div class="position-relative">
+                    <a href="{{ path('app_messages_index') }}" class="text-dark position-relative d-inline-block">
+                        <i class="fas fa-envelope" style="font-size: 1.4rem;"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                              id="unread-message-count" 
+                              style="font-size: 0.7rem; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;">
+                            0
+                        </span>
+                    </a>
+                </div>
+                
+                <!-- Notifications Icon with dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center" 
+                            type="button" 
+                            id="notificationDropdown" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false"
+                            style="width: 40px; height: 40px; border: none; background: #f1f5f9;">
+                        <i class="fas fa-bell" style="font-size: 1.2rem; color: #475569;"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                              id="unread-notification-count" 
+                              style="font-size: 0.7rem; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; margin-top: -5px; margin-left: -10px;">
+                            0
+                        </span>
+                    </button>
+                    
+                    <!-- Notifications Dropdown Menu -->
+                    <div class="dropdown-menu dropdown-menu-end shadow-lg" 
+                         aria-labelledby="notificationDropdown" 
+                         style="width: 350px; border: none; border-radius: 12px; margin-top: 10px;">
+                        <div class="dropdown-header d-flex justify-content-between align-items-center py-3 px-4" style="border-bottom: 1px solid #e9ecef;">
+                            <h6 class="mb-0 fw-bold">Notifications</h6>
+                            <span class="badge bg-primary rounded-pill" id="notification-total">0</span>
+                        </div>
+                        <div class="notification-list" style="max-height: 400px; overflow-y: auto;">
+                            <!-- Sample notification items -->
+                            <a class="dropdown-item py-3 px-4" href="#" style="border-bottom: 1px solid #f1f5f9;">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-2">
+                                            <i class="fas fa-user-plus text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1 fw-semibold">New athlete assigned</p>
+                                        <small class="text-muted d-block">John Doe has been assigned to you</small>
+                                        <small class="text-muted">5 min ago</small>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="dropdown-item py-3 px-4" href="#" style="border-bottom: 1px solid #f1f5f9;">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-2">
+                                            <i class="fas fa-utensils text-success"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1 fw-semibold">Meal plan updated</p>
+                                        <small class="text-muted d-block">Sarah updated her meal preferences</small>
+                                        <small class="text-muted">1 hour ago</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="dropdown-footer text-center py-3" style="border-top: 1px solid #e9ecef;">
+                            <a href="#" class="text-decoration-none small" style="color: var(--primary-green);">View all notifications</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Profile Dropdown -->
+                <div class="dropdown ms-2">
+                    <button class="btn p-0 d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center" 
+                             style="width: 40px; height: 40px; background: var(--primary-green) !important;">
+                            <span class="text-white fw-bold">{{ app.user.name|first|default('C')|upper }}</span>
+                        </div>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end shadow-sm" style="border: none; border-radius: 12px;">
+                        <div class="px-4 py-3">
+                            <p class="fw-bold mb-1">{{ app.user.name|default('Coach') }}</p>
+                            <small class="text-muted">{{ app.user.email|default('coach@sports.com') }}</small>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item py-2 px-4" href="#">
+                            <i class="fas fa-user me-2" style="color: var(--primary-green);"></i> Profile
+                        </a>
+                        <a class="dropdown-item py-2 px-4" href="#">
+                            <i class="fas fa-cog me-2" style="color: var(--primary-green);"></i> Settings
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item py-2 px-4" href="{{ path('app_logout') }}">
+                            <i class="fas fa-sign-out-alt me-2 text-danger"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
         <!-- Content Area -->
         <div class="content-area p-4">
             
@@ -326,7 +444,11 @@
                 </div>
             </div>
             
+<<<<<<< HEAD
             <!-- Recent Meals - Now as Table -->
+=======
+            <!-- Recent Meals -->
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
             <div class="row" id="meals">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
@@ -662,6 +784,25 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('sidebarCollapsed', 'false');
         }
     });
+<<<<<<< HEAD
+=======
+
+    // Update unread message count
+    function updateUnreadCount() {
+        fetch('{{ path('app_messages_unread_count') }}')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('unread-message-count').textContent = data.count;
+            })
+            .catch(error => console.error('Error fetching unread count:', error));
+    }
+
+    // Initialize counts on page load
+    updateUnreadCount();
+    
+    // Update counts every 30 seconds
+    setInterval(updateUnreadCount, 30000);
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 });
 
 function toggleSubmenu(event, submenuId) {

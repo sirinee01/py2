@@ -1,4 +1,8 @@
 <?php
+<<<<<<< HEAD
+=======
+// src/Entity/NutritionPlan.php
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 
 namespace App\Entity;
 
@@ -45,13 +49,33 @@ class NutritionPlan
     #[ORM\JoinColumn(nullable: false)]
     private ?User $coach = null;
 
+<<<<<<< HEAD
     // FIX: This is now the inverse side (mappedBy points to Meal's property)
     #[ORM\ManyToMany(targetEntity: Meal::class, mappedBy: 'nutritionPlans')]
+=======
+    #[ORM\ManyToMany(targetEntity: Meal::class, inversedBy: 'nutritionPlans', cascade: ['persist'])]
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
     private Collection $meals;
 
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'assignedNutritionPlan')]
     private Collection $athletes;
 
+<<<<<<< HEAD
+=======
+    // Daily targets
+    #[ORM\Column(nullable: true)]
+    private ?int $targetCalories = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $targetProtein = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $targetCarbs = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $targetFat = null;
+
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -153,7 +177,10 @@ class NutritionPlan
     {
         if (!$this->meals->contains($meal)) {
             $this->meals->add($meal);
+<<<<<<< HEAD
             // Ensure bidirectional consistency
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
             if (!$meal->getNutritionPlans()->contains($this)) {
                 $meal->addNutritionPlan($this);
             }
@@ -164,7 +191,10 @@ class NutritionPlan
     public function removeMeal(Meal $meal): static
     {
         if ($this->meals->removeElement($meal)) {
+<<<<<<< HEAD
             // Ensure bidirectional consistency
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
             if ($meal->getNutritionPlans()->contains($this)) {
                 $meal->removeNutritionPlan($this);
             }
@@ -199,6 +229,7 @@ class NutritionPlan
         return $this;
     }
 
+<<<<<<< HEAD
     // Helper method to get today's meals
     public function getTodaysMeals(): Collection
     {
@@ -212,5 +243,119 @@ class NutritionPlan
         }
         
         return $todaysMeals;
+=======
+    public function getTargetCalories(): ?int
+    {
+        return $this->targetCalories;
+    }
+
+    public function setTargetCalories(?int $targetCalories): static
+    {
+        $this->targetCalories = $targetCalories;
+        return $this;
+    }
+
+    public function getTargetProtein(): ?int
+    {
+        return $this->targetProtein;
+    }
+
+    public function setTargetProtein(?int $targetProtein): static
+    {
+        $this->targetProtein = $targetProtein;
+        return $this;
+    }
+
+    public function getTargetCarbs(): ?int
+    {
+        return $this->targetCarbs;
+    }
+
+    public function setTargetCarbs(?int $targetCarbs): static
+    {
+        $this->targetCarbs = $targetCarbs;
+        return $this;
+    }
+
+    public function getTargetFat(): ?int
+    {
+        return $this->targetFat;
+    }
+
+    public function setTargetFat(?int $targetFat): static
+    {
+        $this->targetFat = $targetFat;
+        return $this;
+    }
+
+    /**
+     * Get total calories from all meals in the plan
+     */
+    public function getTotalCalories(): int
+    {
+        $total = 0;
+        foreach ($this->meals as $meal) {
+            $total += $meal->getCalories();
+        }
+        return $total;
+    }
+
+    /**
+     * Get meals for a specific day of the week
+     */
+    public function getMealsByDay(int $dayOfWeek): array
+    {
+        $dayMeals = [];
+        foreach ($this->meals as $meal) {
+            if ($meal->getDayOfWeek() == $dayOfWeek) {
+                $dayMeals[] = $meal;
+            }
+        }
+        
+        // Sort by meal time
+        usort($dayMeals, function($a, $b) {
+            $order = ['breakfast' => 1, 'lunch' => 2, 'dinner' => 3, 'snack' => 4];
+            return ($order[$a->getMealTime()] ?? 5) <=> ($order[$b->getMealTime()] ?? 5);
+        });
+        
+        return $dayMeals;
+    }
+
+    /**
+     * Get today's meals
+     */
+    public function getTodaysMeals(): array
+    {
+        $today = (int) date('N'); // 1 (Monday) to 7 (Sunday)
+        return $this->getMealsByDay($today);
+    }
+
+    /**
+     * Calculate daily targets based on meals
+     */
+    public function calculateDailyTargets(): array
+    {
+        $todaysMeals = $this->getTodaysMeals();
+        
+        $calories = 0;
+        $protein = 0;
+        $carbs = 0;
+        $fat = 0;
+        
+        foreach ($todaysMeals as $meal) {
+            $calories += $meal->getCalories();
+            $protein += $meal->getProtein() ?? 0;
+            $carbs += $meal->getCarbs() ?? 0;
+            $fat += $meal->getFat() ?? 0;
+        }
+        
+        return [
+            'calories' => $calories,
+            'protein' => $protein,
+            'carbs' => $carbs,
+            'fat' => $fat,
+            'water' => $this->dailyWaterIntake ?? 2.5
+        ];
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
     }
 }

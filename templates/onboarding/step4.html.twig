@@ -1,0 +1,304 @@
+{# templates/onboarding/step4.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Final Details - Step 4{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --primary-green: #10b981;
+        --primary-dark: #059669;
+    }
+    
+    .onboarding-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .onboarding-card {
+        background: white;
+        border-radius: 30px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        width: 100%;
+        max-width: 800px;
+        overflow: hidden;
+        animation: slideUp 0.5s ease;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .progress-header {
+        background: linear-gradient(135deg, var(--primary-green), #3b82f6);
+        padding: 30px;
+        color: white;
+    }
+    
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-50%);
+        z-index: 1;
+    }
+    
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+    
+    .step.active {
+        background: white;
+        color: var(--primary-green);
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(255,255,255,0.5);
+    }
+    
+    .step.completed {
+        background: white;
+        color: var(--primary-green);
+    }
+    
+    .step.completed::after {
+        content: '✓';
+    }
+    
+    .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 4px;
+        margin-top: 20px;
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background: white;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        width: {{ progress }}%;
+    }
+    
+    .onboarding-body {
+        padding: 40px;
+    }
+    
+    .step-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .step-subtitle {
+        color: #666;
+        margin-bottom: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 15px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        outline: none;
+    }
+    
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    .btn-next {
+        background: linear-gradient(135deg, var(--primary-green), #3b82f6);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+    
+    .btn-next:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-prev {
+        background: white;
+        color: var(--primary-green);
+        border: 2px solid var(--primary-green);
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        text-decoration: none;
+        text-align: center;
+    }
+    
+    .btn-prev:hover {
+        background: #f0fdf4;
+        transform: translateY(-2px);
+    }
+    
+    .measurement-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .measurement-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .measurement-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="onboarding-page">
+    <div class="onboarding-card">
+        <div class="progress-header">
+            <div class="progress-steps">
+                <div class="step completed">1</div>
+                <div class="step completed">2</div>
+                <div class="step completed">3</div>
+                <div class="step active">4</div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: {{ progress }}%"></div>
+            </div>
+        </div>
+        
+        <div class="onboarding-body">
+            <h1 class="step-title">Final Details 📏</h1>
+            <p class="step-subtitle">Almost done! Just a few more details</p>
+            
+            {{ form_start(form, {'attr': {'id': 'onboardingForm'}}) }}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.bodyFatPercentage.vars.label }}</label>
+                            {{ form_widget(form.bodyFatPercentage) }}
+                            {{ form_errors(form.bodyFatPercentage) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.muscleMass.vars.label }}</label>
+                            {{ form_widget(form.muscleMass) }}
+                            {{ form_errors(form.muscleMass) }}
+                        </div>
+                    </div>
+                </div>
+                
+                <h5 class="mb-3">Body Measurements (optional)</h5>
+                <div class="measurement-grid">
+                    <div class="form-group">
+                        <label class="form-label">{{ form.chestMeasurement.vars.label }}</label>
+                        {{ form_widget(form.chestMeasurement) }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ form.waistMeasurement.vars.label }}</label>
+                        {{ form_widget(form.waistMeasurement) }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ form.hipsMeasurement.vars.label }}</label>
+                        {{ form_widget(form.hipsMeasurement) }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ form.armsMeasurement.vars.label }}</label>
+                        {{ form_widget(form.armsMeasurement) }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ form.thighsMeasurement.vars.label }}</label>
+                        {{ form_widget(form.thighsMeasurement) }}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">{{ form.healthConditions.vars.label }}</label>
+                    {{ form_widget(form.healthConditions) }}
+                    {{ form_errors(form.healthConditions) }}
+                </div>
+                
+                <button type="submit" class="btn-next">
+                    Complete Profile
+                    <i class="fas fa-check-circle ms-2"></i>
+                </button>
+                
+                <a href="{{ path('app_onboarding_step3') }}" class="btn-prev d-block">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to Nutrition
+                </a>
+                
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

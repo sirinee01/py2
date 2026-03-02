@@ -1,0 +1,154 @@
+{# templates/food_analysis/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Food Analysis{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Food Analysis with AI</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div id="preview-container" style="display: none;">
+                            <img id="image-preview" class="img-fluid rounded" style="max-height: 300px;">
+                        </div>
+                    </div>
+
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Select Food Image</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="progress" style="display: none;" id="progress-bar">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     style="width: 100%">Analyzing...</div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" id="analyze-btn">
+                            <i class="fas fa-robot me-2"></i>Analyze Food
+                        </button>
+                    </form>
+
+                    <div id="result-container" style="display: none;" class="mt-4">
+                        <h5 class="mb-3">Analysis Result:</h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Food:</strong> <span id="food-name"></span></p>
+                                        <p><strong>Calories:</strong> <span id="calories"></span> kcal</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Protein:</strong> <span id="protein"></span> g</p>
+                                        <p><strong>Carbs:</strong> <span id="carbs"></span> g</p>
+                                        <p><strong>Fat:</strong> <span id="fat"></span> g</p>
+                                    </div>
+                                </div>
+                                <p><strong>Confidence:</strong> <span id="confidence"></span>%</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button class="btn btn-success" onclick="addToMeal()">
+                                <i class="fas fa-plus-circle me-2"></i>Add to Today's Meals
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="error-container" style="display: none;" class="mt-4 alert alert-danger">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#image-preview {
+    max-width: 100%;
+    border: 2px dashed #dee2e6;
+    padding: 10px;
+}
+</style>
+
+<script>
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('image-preview').src = e.target.result;
+            document.getElementById('preview-container').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('upload-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const resultContainer = document.getElementById('result-container');
+    const errorContainer = document.getElementById('error-container');
+    
+    // Show progress
+    analyzeBtn.disabled = true;
+    progressBar.style.display = 'block';
+    resultContainer.style.display = 'none';
+    errorContainer.style.display = 'none';
+    
+    try {
+        const response = await fetch('{{ path('app_food_analysis_upload') }}', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Display results
+            document.getElementById('food-name').textContent = result.data.foodName;
+            document.getElementById('calories').textContent = result.data.calories;
+            document.getElementById('protein').textContent = result.data.protein;
+            document.getElementById('carbs').textContent = result.data.carbs;
+            document.getElementById('fat').textContent = result.data.fat;
+            document.getElementById('confidence').textContent = (result.data.confidence * 100).toFixed(1);
+            
+            resultContainer.style.display = 'block';
+        } else {
+            errorContainer.textContent = result.error;
+            errorContainer.style.display = 'block';
+        }
+    } catch (error) {
+        errorContainer.textContent = 'Network error: ' + error.message;
+        errorContainer.style.display = 'block';
+    } finally {
+        analyzeBtn.disabled = false;
+        progressBar.style.display = 'none';
+    }
+});
+
+function addToMeal() {
+    const foodData = {
+        name: document.getElementById('food-name').textContent,
+        calories: parseFloat(document.getElementById('calories').textContent),
+        protein: parseFloat(document.getElementById('protein').textContent),
+        carbs: parseFloat(document.getElementById('carbs').textContent),
+        fat: parseFloat(document.getElementById('fat').textContent)
+    };
+    
+    // Store in localStorage or redirect to meal logging page
+    localStorage.setItem('analyzedFood', JSON.stringify(foodData));
+    window.location.href = '{{ path('app_athlete_dashboard') }}';
+}
+</script>
+{% endblock %}

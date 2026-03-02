@@ -34,6 +34,7 @@
             
             <!-- Navigation Menu -->
             <nav class="nav flex-column">
+<<<<<<< HEAD
                 <a href="{{ path('app_dashboard') }}" class="nav-link active d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="background: var(--primary-green); color: white;">
                     <i class="fas fa-tachometer-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
                     <span class="sidebar-text">Dashboard</span>
@@ -62,11 +63,60 @@
                 </a>
                 
                 {% if user.roleType == 'admin' %}
+=======
+    <a href="{{ path('app_admin') }}" class="nav-link active d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="background: var(--primary-green); color: white;">            
+        <i class="fas fa-tachometer-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+        <span class="sidebar-text flex-grow-1">Dashboard</span>
+    </a>
+    
+    <!-- User Management with dropdown -->
+        {% if user.roleType == 'admin' %}
+    <div class="nav-item">
+        
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                     <a href="{{ path('app_admin') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
                         <i class="fas fa-shield-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
                         <span class="sidebar-text">Admin Panel</span>
                     </a>
+<<<<<<< HEAD
                 {% elseif user.roleType == 'coach' %}
+=======
+        <a href="{{ path('app_admin') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+            <i class="fas fa-users me-3" style="width: 20px; flex-shrink: 0;"></i><span class="sidebar-text flex-grow-1">Users Management</span>
+            <i class="fas fa-chevron-down sidebar-text" id="userMenuArrow" style="font-size: 0.8rem; transition: transform 0.3s;"></i>
+        </a>
+        <!-- Submenu -->
+        <div class="user-submenu" id="userSubmenu" style="display: none; margin-left: 2.5rem; margin-bottom: 0.5rem;">
+            <a href="{{ path('app_admin') }}" class="nav-link d-flex align-items-center px-3 py-2 mb-1 rounded-3" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)';">
+                <i class="fas fa-users me-2" style="width: 16px; font-size: 0.8rem;"></i>
+                <span class="sidebar-text">All Users</span>
+            </a>
+            
+        </div>
+    </div>
+    <a href="{{ path('app_admin_competitions') }} " class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+            <i class="fas fa-trophy "></i> 
+            <span class="sidebar-text flex-grow-1 ps-3">Competitions</span>
+    </a>
+
+    <a href="" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+            <i class="fas fa-map"></i>
+            <span class="sidebar-text flex-grow-1 ps-3">Nutrition Plans</span>
+    </a>
+
+    <a href="" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+        <i class="fas fa-bacon "></i>
+        <span class="sidebar-text flex-grow-1 ps-3">Meals</span>
+    </a>
+    
+    <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+    
+    <a href="{{ path('app_logout') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,0,0,0.2)'; this.style.color='#ff6b6b';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
+        <i class="fas fa-sign-out-alt me-3" style="width: 20px; flex-shrink: 0;"></i>
+        <span class="sidebar-text">Logout</span>
+    </a>
+    {% elseif user.roleType == 'coach' %}
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                     <a href="{{ path('app_coach_athletes') }}" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
                         <i class="fas fa-users me-3" style="width: 20px; flex-shrink: 0;"></i>
                         <span class="sidebar-text">My Athletes</span>
@@ -75,6 +125,7 @@
                         <i class="fas fa-dumbbell me-3" style="width: 20px; flex-shrink: 0;"></i>
                         <span class="sidebar-text">Training Plans</span>
                     </a>
+<<<<<<< HEAD
                 {% elseif user.roleType == 'athlete' %}
                     <a href="#" class="nav-link d-flex align-items-center px-3 py-3 mb-2 rounded-3" style="color: rgba(255,255,255,0.8); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.8)';">
                         <i class="fas fa-chart-line me-3" style="width: 20px; flex-shrink: 0;"></i>
@@ -93,6 +144,11 @@
                     <span class="sidebar-text">Logout</span>
                 </a>
             </nav>
+=======
+                
+                {% endif %}
+</nav>
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
             
             <div class="btn btn-sm text-white d-flex justify-content-end">
                 <button id="sidebarToggle" class="btn btn-sm text-white d-flex justify-content-end" style="background: transparent; border: none; font-size: 1.2rem;">
@@ -230,7 +286,11 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="text-white-50 mb-2">My Athletes</h6>
+<<<<<<< HEAD
                                         <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">{{ athletesCount }}</h2>
+=======
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">12</h2>
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                                     </div>
                                     <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
                                         <i class="fas fa-users text-white" style="font-size: 1.5rem;"></i>
@@ -245,7 +305,11 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="text-white-50 mb-2">Active Plans</h6>
+<<<<<<< HEAD
                                         <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">{{ nutritionPlansCount }}</h2>
+=======
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">8</h2>
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                                     </div>
                                     <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
                                         <i class="fas fa-utensils text-white" style="font-size: 1.5rem;"></i>
@@ -260,7 +324,11 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="text-white-50 mb-2">Meals Library</h6>
+<<<<<<< HEAD
                                         <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">{{ mealsCount }}</h2>
+=======
+                                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: 700;">24</h2>
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                                     </div>
                                     <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-3">
                                         <i class="fas fa-bacon text-white" style="font-size: 1.5rem;"></i>
@@ -475,21 +543,41 @@
                                 </div>
                             </div>
                         </div>
+<<<<<<< HEAD
                         <div class="card-body p-3">
                             <div class="row g-3">
                                 <div class="col-md-3 col-6">
                                     <a href="{{ path('app_profile_edit') }}" class="btn btn-outline-success w-100 py-3 rounded-3" style="border-color: var(--primary-green); color: var(--primary-green);" onmouseover="this.style.background='var(--primary-green)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-green)';">
+=======
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-3 col-6">
+                                    <a href="#" class="btn btn-outline-success w-100 py-3 rounded-3" style="border-color: var(--primary-green); color: var(--primary-green);" onmouseover="this.style.background='var(--primary-green)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-green)';">
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                                         <i class="fas fa-user-edit d-block mb-2" style="font-size: 1.5rem;"></i>
                                         <small>Update Profile</small>
                                     </a>
                                 </div>
                                 <div class="col-md-3 col-6">
+<<<<<<< HEAD
                                     <a href="{{ path('app_profile_change_password') }}" class="btn btn-outline-success w-100 py-3 rounded-3" style="border-color: var(--primary-green); color: var(--primary-green);" onmouseover="this.style.background='var(--primary-green)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-green)';">
+=======
+                                    <a href="#" class="btn btn-outline-success w-100 py-3 rounded-3" style="border-color: var(--primary-green); color: var(--primary-green);" onmouseover="this.style.background='var(--primary-green)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-green)';">
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                                         <i class="fas fa-key d-block mb-2" style="font-size: 1.5rem;"></i>
                                         <small>Change Password</small>
                                     </a>
                                 </div>
+<<<<<<< HEAD
                               
+=======
+                                <div class="col-md-3 col-6">
+                                    <a href="#" class="btn btn-outline-success w-100 py-3 rounded-3" style="border-color: var(--primary-green); color: var(--primary-green);" onmouseover="this.style.background='var(--primary-green)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-green)';">
+                                        <i class="fas fa-chart-pie d-block mb-2" style="font-size: 1.5rem;"></i>
+                                        <small>View Reports</small>
+                                    </a>
+                                </div>
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                                 <div class="col-md-3 col-6">
                                     <a href="{{ path('app_logout') }}" class="btn btn-outline-danger w-100 py-3 rounded-3">
                                         <i class="fas fa-sign-out-alt d-block mb-2" style="font-size: 1.5rem;"></i>
@@ -505,6 +593,7 @@
     </main>
 </div>
 
+<<<<<<< HEAD
 <!-- Floating Chatbot Button -->
 <div id="chatbotButton" class="chatbot-float-btn" onclick="toggleChatbot()" title="Open Sports Assistant">
     <i class="fas fa-robot"></i>
@@ -541,6 +630,8 @@
     </form>
 </div>
 
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 <style>
 :root {
     --primary-green: #10b981;
@@ -663,6 +754,7 @@ body {
 .list-group-item:hover .icon-circle i {
     color: white !important;
 }
+<<<<<<< HEAD
 
 /* Chatbot Widget Styles */
 .chatbot-float-btn {
@@ -881,6 +973,8 @@ body {
 .widget-message p:not(:last-child) {
     margin-bottom: 8px;
 }
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 </style>
 
 <!-- Add Font Awesome -->
@@ -932,6 +1026,7 @@ function toggleSubmenu(event, submenuId) {
         arrow.style.transform = 'rotate(0deg)';
     }
 }
+<<<<<<< HEAD
 
 // Chatbot Widget Functionality
 let isWidgetLoading = false;
@@ -1025,5 +1120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 </script>
 {% endblock %}

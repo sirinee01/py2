@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ nutritionPlan.name }} - Athlete Dashboard{% endblock %}
@@ -47,11 +48,73 @@
                                         </li>
                                     </ul>
                                 </div>
+=======
+{# templates/athlete/nutrition_plan_view.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ nutritionPlan.name }} - Nutrition Plan{% endblock %}
+
+{% block body %}
+<div class="athlete-wrapper" style="background: #f8f9fa; min-height: 100vh;">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm px-4" style="border-bottom: 3px solid var(--primary-green);">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ path('app_athlete_dashboard') }}">
+                <span style="color: var(--primary-green); font-size: 1.8rem; font-weight: 700;">⚡</span>
+                <span class="ms-2" style="font-weight: 600; color: #1a2e35;">MyNutrition</span>
+            </a>
+            
+            <a href="{{ path('app_athlete_dashboard') }}" class="btn btn-outline-success rounded-pill">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ path('app_athlete_dashboard') }}" style="color: var(--primary-green); text-decoration: none;">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ nutritionPlan.name }}</li>
+            </ol>
+        </nav>
+
+        <!-- Plan Header -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: linear-gradient(135deg, #1a2e35 0%, #0f1e24 100%);">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="text-white mb-2">{{ nutritionPlan.name }}</h2>
+                        <p class="text-white-50 mb-3">{{ nutritionPlan.description }}</p>
+                        <div class="d-flex gap-3">
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="fas fa-clock me-2" style="color: var(--primary-green);"></i>{{ nutritionPlan.duration }} days
+                            </span>
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="fas fa-bullseye me-2" style="color: var(--primary-green);"></i>{{ nutritionPlan.objective }}
+                            </span>
+                            {% if nutritionPlan.dailyWaterIntake %}
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="fas fa-tint me-2" style="color: var(--primary-green);"></i>{{ nutritionPlan.dailyWaterIntake }}L water/day
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if isAssigned %}
+                            <span class="badge bg-success mt-3">Currently Assigned to You</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="stats-circle ms-auto" style="width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(var(--primary-green) {{ planProgress|default(0) * 3.6 }}deg, rgba(255,255,255,0.2) 0deg); display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 80px; height: 80px; border-radius: 50%; background: #1a2e35; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <span class="text-white h4 mb-0">{{ planProgress|default(0) }}%</span>
+                                <small class="text-white-50">complete</small>
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+<<<<<<< HEAD
             
             <!-- Meals Section -->
             <div class="card card-custom">
@@ -94,8 +157,497 @@
             <!-- Back Button -->
             <div class="mt-4">
                 <a href="{{ path('app_athlete_nutrition_plans') }}" class="btn btn-secondary">Back to Nutrition Plans</a>
+=======
+        </div>
+
+        <!-- Weekly Overview -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4">
+                        <h5 class="mb-0" style="color: var(--primary-green);">Weekly Meal Schedule</h5>
+                    </div>
+                    <div class="card-body p-4 pt-0">
+                        <div class="row">
+                            {% for day in 1..7 %}
+                                {% set dayMeals = nutritionPlan.getMealsByDay(day) %}
+                                <div class="col-md-3 col-lg-{% if day <= 4 %}3{% else %}2{% endif %} mb-3">
+                                    <div class="day-card p-3 {% if day == "now"|date('N') %}border-success{% endif %}" style="border: 2px solid {% if day == "now"|date('N') %}var(--primary-green){% else %}#e9ecef{% endif %}; border-radius: 12px;">
+                                        <h6 class="text-center mb-3">
+                                            {% if day == 1 %}Monday
+                                            {% elseif day == 2 %}Tuesday
+                                            {% elseif day == 3 %}Wednesday
+                                            {% elseif day == 4 %}Thursday
+                                            {% elseif day == 5 %}Friday
+                                            {% elseif day == 6 %}Saturday
+                                            {% elseif day == 7 %}Sunday
+                                            {% endif %}
+                                            {% if day == "now"|date('N') %}
+                                                <span class="badge bg-success ms-2">Today</span>
+                                            {% endif %}
+                                        </h6>
+                                        
+                                        {% if dayMeals|length > 0 %}
+                                            <div class="day-meals">
+                                                {% for meal in dayMeals %}
+                                                    {# Find consumption status for this meal #}
+                                                    {% set mealStatus = null %}
+                                                    {% for item in mealsWithStatus %}
+                                                        {% if item.meal.id == meal.id %}
+                                                            {% set mealStatus = item %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    
+                                                    <div class="day-meal-item mb-2 p-2 {% if isAssigned and mealStatus and mealStatus.consumed %}bg-success bg-opacity-10{% else %}bg-light{% endif %} rounded-3" 
+                                                         data-bs-toggle="modal" 
+                                                         data-bs-target="#mealModal{{ meal.id }}" 
+                                                         style="cursor: pointer; {% if isAssigned and mealStatus and mealStatus.consumed %}border-left: 3px solid var(--primary-green);{% endif %}">
+                                                        <small class="d-block fw-bold">{{ meal.name }}</small>
+                                                        <small class="text-muted">{{ meal.mealTime|capitalize }} • {{ meal.calories }} cal</small>
+                                                        {% if isAssigned and mealStatus and mealStatus.consumed %}
+                                                            <small class="d-block text-success"><i class="fas fa-check-circle"></i> Completed</small>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <p class="text-muted small text-center py-3">No meals planned</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Meals Grid -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1" style="color: var(--primary-green);">All Meals in this Plan</h5>
+                            <p class="text-muted small mb-0">{{ mealsWithStatus|length }} meals total</p>
+                        </div>
+                        <div class="input-group" style="width: 300px;">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-0" placeholder="Search meals..." id="searchMeals">
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if mealsWithStatus|length > 0 %}
+                            <div class="row" id="mealsGrid">
+                                {% for item in mealsWithStatus %}
+                                    {% set meal = item.meal %}
+                                    <div class="col-md-4 col-lg-3 mb-4 meal-card-wrapper" data-meal-name="{{ meal.name|lower }}" data-meal-description="{{ meal.description|lower }}">
+                                        <div class="card h-100 border-0 shadow-sm {% if item.consumed %}border-success{% endif %}" 
+                                             style="border-radius: 12px; transition: all 0.3s; {% if item.consumed %}border: 2px solid var(--primary-green);{% endif %}"
+                                             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(16,185,129,0.2)';" 
+                                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.05)';">
+                                            {% if meal.image %}
+                                                <img src="{{ asset('uploads/meals/' ~ meal.image) }}" class="card-img-top" alt="{{ meal.name }}" style="height: 150px; object-fit: cover; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                                            {% else %}
+                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                                                    <i class="fas fa-utensils fa-3x" style="color: var(--primary-green); opacity: 0.5;"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <h6 class="card-title mb-2">{{ meal.name }}</h6>
+                                                    {% if item.consumed %}
+                                                        <span class="badge bg-success">Completed</span>
+                                                    {% endif %}
+                                                </div>
+                                                <p class="card-text small text-muted mb-3">{{ meal.description|slice(0, 60) }}{% if meal.description|length > 60 %}...{% endif %}</p>
+                                                
+                                                <div class="nutrition-badges mb-3">
+                                                    <span class="badge bg-primary me-1">{{ meal.calories }} cal</span>
+                                                    {% if meal.protein %}<span class="badge bg-warning me-1">{{ meal.protein }}g P</span>{% endif %}
+                                                    {% if meal.carbs %}<span class="badge bg-info me-1">{{ meal.carbs }}g C</span>{% endif %}
+                                                    {% if meal.fat %}<span class="badge bg-secondary me-1">{{ meal.fat }}g F</span>{% endif %}
+                                                </div>
+                                                
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge bg-light text-dark">
+                                                        <i class="fas fa-clock me-1" style="color: var(--primary-green);"></i>
+                                                        {{ meal.mealTime|capitalize }} • Day 
+                                                        {% if meal.dayOfWeek == 1 %}Monday
+                                                        {% elseif meal.dayOfWeek == 2 %}Tuesday
+                                                        {% elseif meal.dayOfWeek == 3 %}Wednesday
+                                                        {% elseif meal.dayOfWeek == 4 %}Thursday
+                                                        {% elseif meal.dayOfWeek == 5 %}Friday
+                                                        {% elseif meal.dayOfWeek == 6 %}Saturday
+                                                        {% elseif meal.dayOfWeek == 7 %}Sunday
+                                                        {% else %}Any
+                                                        {% endif %}
+                                                    </span>
+                                                    {% if isAssigned %}
+                                                        <button class="btn btn-sm {% if item.consumed %}btn-success{% else %}btn-outline-success{% endif %} rounded-pill quick-log-btn" 
+                                                                data-meal-id="{{ meal.id }}"
+                                                                data-consumed="{{ item.consumed ? 'true' : 'false' }}">
+                                                            <i class="fas {% if item.consumed %}fa-check-circle{% else %}fa-plus-circle{% endif %} me-1"></i>
+                                                            {% if item.consumed %}Logged{% else %}Log Meal{% endif %}
+                                                        </button>
+                                                    {% else %}
+                                                        <button class="btn btn-sm btn-outline-success rounded-pill view-meal-details" data-meal-id="{{ meal.id }}" data-bs-toggle="modal" data-bs-target="#mealModal{{ meal.id }}">
+                                                            View Details
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <div class="empty-state">
+                                    <i class="fas fa-utensils fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+                                    <h5 class="text-muted mb-3">No meals found in this plan</h5>
+                                    <p class="text-muted mb-4">This nutrition plan doesn't have any meals assigned yet.</p>
+                                    {% if isAssigned %}
+                                        <button class="btn btn-success rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addCustomMealModal">
+                                            <i class="fas fa-plus-circle me-2"></i>Log Custom Meal
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
             </div>
         </div>
     </div>
 </div>
+<<<<<<< HEAD
+=======
+
+<!-- Meal Detail Modals -->
+{% for item in mealsWithStatus %}
+    {% set meal = item.meal %}
+    <div class="modal fade" id="mealModal{{ meal.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+                <div class="modal-header border-0 p-4">
+                    <h5 class="modal-title" style="color: var(--primary-green);">{{ meal.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 pt-0">
+                    <div class="row">
+                        {% if meal.image %}
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <img src="{{ asset('uploads/meals/' ~ meal.image) }}" alt="{{ meal.name }}" class="img-fluid rounded-3" style="border-radius: 12px;">
+                            </div>
+                        {% endif %}
+                        <div class="col-md-{% if meal.image %}6{% else %}12{% endif %}">
+                            <h6 class="fw-bold mb-3">Description</h6>
+                            <p class="text-muted mb-4">{{ meal.description }}</p>
+                            
+                            <h6 class="fw-bold mb-3">Nutrition Facts</h6>
+                            <div class="nutrition-panel bg-light p-3 rounded-3 mb-4">
+                                <div class="row text-center">
+                                    <div class="col-3">
+                                        <div class="nutrition-circle mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(16,185,129,0.1); display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-bolt" style="color: var(--primary-green);"></i>
+                                        </div>
+                                        <small class="d-block fw-bold">{{ meal.calories }}</small>
+                                        <small class="text-muted">Calories</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="nutrition-circle mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,193,7,0.1); display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-dumbbell" style="color: #ffc107;"></i>
+                                        </div>
+                                        <small class="d-block fw-bold">{{ meal.protein|default(0) }}g</small>
+                                        <small class="text-muted">Protein</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="nutrition-circle mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(13,202,240,0.1); display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-bread-slice" style="color: #0dcaf0;"></i>
+                                        </div>
+                                        <small class="d-block fw-bold">{{ meal.carbs|default(0) }}g</small>
+                                        <small class="text-muted">Carbs</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="nutrition-circle mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(108,117,125,0.1); display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-oil-can" style="color: #6c757d;"></i>
+                                        </div>
+                                        <small class="d-block fw-bold">{{ meal.fat|default(0) }}g</small>
+                                        <small class="text-muted">Fat</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-light text-dark p-2">
+                                    <i class="fas fa-calendar me-2" style="color: var(--primary-green);"></i>
+                                    {% if meal.dayOfWeek == 1 %}Monday
+                                    {% elseif meal.dayOfWeek == 2 %}Tuesday
+                                    {% elseif meal.dayOfWeek == 3 %}Wednesday
+                                    {% elseif meal.dayOfWeek == 4 %}Thursday
+                                    {% elseif meal.dayOfWeek == 5 %}Friday
+                                    {% elseif meal.dayOfWeek == 6 %}Saturday
+                                    {% elseif meal.dayOfWeek == 7 %}Sunday
+                                    {% else %}Any day
+                                    {% endif %}
+                                </span>
+                                {% if isAssigned %}
+                                    <button class="btn {% if item.consumed %}btn-success{% else %}btn-outline-success{% endif %} rounded-pill px-4 log-meal-from-modal" 
+                                            data-meal-id="{{ meal.id }}"
+                                            data-consumed="{{ item.consumed ? 'true' : 'false' }}"
+                                            data-bs-dismiss="modal">
+                                        <i class="fas {% if item.consumed %}fa-check-circle{% else %}fa-plus-circle{% endif %} me-2"></i>
+                                        {% if item.consumed %}Already Logged{% else %}Log This Meal{% endif %}
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<!-- Add Custom Meal Modal (if needed) -->
+<div class="modal fade" id="addCustomMealModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title" style="color: var(--primary-green);">Log Custom Meal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <form id="customMealForm">
+                    <div class="mb-3">
+                        <label class="form-label">Meal Name *</label>
+                        <input type="text" class="form-control" name="name" required placeholder="e.g., Chicken Salad">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="2" placeholder="What did you eat?"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Calories *</label>
+                            <input type="number" class="form-control" name="calories" required min="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Meal Time</label>
+                            <select class="form-select" name="mealTime">
+                                <option value="breakfast">Breakfast</option>
+                                <option value="lunch">Lunch</option>
+                                <option value="dinner">Dinner</option>
+                                <option value="snack">Snack</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Protein (g)</label>
+                            <input type="number" class="form-control" name="protein" min="0" placeholder="Optional">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Carbs (g)</label>
+                            <input type="number" class="form-control" name="carbs" min="0" placeholder="Optional">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Fat (g)</label>
+                            <input type="number" class="form-control" name="fat" min="0" placeholder="Optional">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Reason (Why didn't you follow the plan?)</label>
+                        <textarea class="form-control" name="reason" rows="2" placeholder="e.g., Was at a restaurant..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success rounded-pill px-4" onclick="submitCustomMeal()">Log Meal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+.athlete-wrapper {
+    background: #f8f9fa;
+}
+
+.day-card {
+    transition: all 0.3s;
+}
+
+.day-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(16,185,129,0.15);
+}
+
+.day-meal-item {
+    transition: all 0.3s;
+}
+
+.day-meal-item:hover {
+    background: rgba(16,185,129,0.1) !important;
+}
+
+.stats-circle {
+    transition: all 0.3s;
+}
+
+.nutrition-circle {
+    transition: transform 0.3s;
+}
+
+.nutrition-circle:hover {
+    transform: scale(1.1);
+}
+
+.quick-log-btn {
+    transition: all 0.3s;
+}
+
+.quick-log-btn:hover {
+    transform: scale(1.05);
+}
+
+.empty-state {
+    padding: 3rem 1rem;
+}
+</style>
+
+<script>
+function submitCustomMeal() {
+    const form = document.getElementById('customMealForm');
+    const formData = new FormData(form);
+    
+    const data = {
+        name: formData.get('name'),
+        description: formData.get('description'),
+        calories: parseInt(formData.get('calories')),
+        protein: formData.get('protein') ? parseInt(formData.get('protein')) : null,
+        carbs: formData.get('carbs') ? parseInt(formData.get('carbs')) : null,
+        fat: formData.get('fat') ? parseInt(formData.get('fat')) : null,
+        mealTime: formData.get('mealTime'),
+        reason: formData.get('reason')
+    };
+    
+    fetch('/athlete/custom-meal/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error logging custom meal');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('searchMeals');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            const mealCards = document.querySelectorAll('.meal-card-wrapper');
+            
+            mealCards.forEach(card => {
+                const mealName = card.dataset.mealName || '';
+                const mealDesc = card.dataset.mealDescription || '';
+                
+                if (mealName.includes(searchText) || mealDesc.includes(searchText)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Quick log meal functionality
+    document.querySelectorAll('.quick-log-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const mealId = this.dataset.mealId;
+            const consumed = this.dataset.consumed === 'true';
+            
+            fetch('/athlete/meal/' + mealId + '/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ 
+                    consumed: !consumed,
+                    servings: 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error toggling meal');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    
+    // Log meal from modal
+    document.querySelectorAll('.log-meal-from-modal').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const mealId = this.dataset.mealId;
+            const consumed = this.dataset.consumed === 'true';
+            
+            fetch('/athlete/meal/' + mealId + '/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ 
+                    consumed: !consumed,
+                    servings: 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error toggling meal');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+</script>
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 {% endblock %}

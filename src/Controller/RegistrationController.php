@@ -1,17 +1,31 @@
 <?php
+<<<<<<< HEAD
+=======
+// src/Controller/RegistrationController.php
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 
 namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+<<<<<<< HEAD
 use App\Service\EmailVerificationService;
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+<<<<<<< HEAD
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+=======
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 
 class RegistrationController extends AbstractController
 {
@@ -20,14 +34,27 @@ class RegistrationController extends AbstractController
         Request $request, 
         UserPasswordHasherInterface $userPasswordHasher, 
         EntityManagerInterface $entityManager,
+<<<<<<< HEAD
         ValidatorInterface $validator,
         EmailVerificationService $emailVerificationService
     ): Response
     {
+=======
+        TokenStorageInterface $tokenStorage,
+        EventDispatcherInterface $eventDispatcher
+    ): Response
+    {
+        // If user is already logged in, redirect them
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
+
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
+<<<<<<< HEAD
         if ($form->isSubmitted()) {
             try {
                 // Validate form data
@@ -43,12 +70,17 @@ class RegistrationController extends AbstractController
                     }
                 }
 
+=======
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                 // Check if email already exists
                 $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
                 if ($existingUser) {
                     throw new \RuntimeException('Email already registered. Please use a different email or login.');
                 }
 
+<<<<<<< HEAD
                 // Validate entity
                 $validationErrors = $validator->validate($user);
                 if (count($validationErrors) > 0) {
@@ -64,6 +96,10 @@ class RegistrationController extends AbstractController
                 if (empty($plainPassword)) {
                     throw new \RuntimeException('Password cannot be empty.');
                 }
+=======
+                // Encode the plain password
+                $plainPassword = $form->get('plainPassword')->getData();
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                 
                 $user->setPassword(
                     $userPasswordHasher->hashPassword($user, $plainPassword)
@@ -71,15 +107,19 @@ class RegistrationController extends AbstractController
 
                 // Set the roleType and roles
                 $roleType = $form->get('roleType')->getData();
+<<<<<<< HEAD
                 if (empty($roleType)) {
                     throw new \RuntimeException('Please select a role.');
                 }
                 
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
                 $user->setRoleType($roleType);
                 $user->setRoles(['ROLE_USER', 'ROLE_' . strtoupper($roleType)]);
 
                 // Set creation date
                 $user->setCreatedAt(new \DateTime());
+<<<<<<< HEAD
                 
                 // Mark user as unverified (awaiting email verification)
                 $user->setVerified(false);
@@ -121,6 +161,43 @@ class RegistrationController extends AbstractController
                 
                 // Log error
                 error_log('Registration Error: ' . $e->getMessage() . ' - Trace: ' . $e->getTraceAsString());
+=======
+
+                // Set default onboarding status
+                $user->setOnboardingCompleted(false);
+
+                // Persist the user
+                $entityManager->persist($user);
+                $entityManager->flush();
+
+                // ===== PROPER AUTO-LOGIN WITH INJECTED SERVICES =====
+                // Create token
+                $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
+                $tokenStorage->setToken($token);
+                
+                // Fire login event
+                $event = new InteractiveLoginEvent($request, $token);
+                $eventDispatcher->dispatch($event);
+
+                // Success message
+                $this->addFlash('success', 'Registration successful! ' . ($roleType === 'athlete' ? 'Please complete your profile to get started.' : 'Welcome!'));
+
+                // Redirect based on role
+                if ($roleType === 'athlete') {
+                    return $this->redirectToRoute('app_onboarding_start');
+                } else {
+                    return $this->redirectToRoute('app_dashboard');
+                }
+
+            } catch (\RuntimeException $e) {
+                $this->addFlash('error', $e->getMessage());
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'An unexpected error occurred. Please try again.');
+                
+                if ($this->getParameter('kernel.environment') === 'dev') {
+                    $this->addFlash('error', 'Error details: ' . $e->getMessage());
+                }
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
             }
         }
 

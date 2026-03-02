@@ -1,7 +1,10 @@
 
 ###> symfony/framework-bundle ###
 /.env.local
+<<<<<<< HEAD
 .env
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
@@ -24,3 +27,8 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+<<<<<<< HEAD
+=======
+.env
+.env
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63

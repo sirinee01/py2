@@ -7,10 +7,15 @@ use App\Form\UserType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+<<<<<<< HEAD
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+=======
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
 use Symfony\Component\Routing\Annotation\Route;
 
 class AdminController extends AbstractController
@@ -63,6 +68,7 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin');
     }
 
+<<<<<<< HEAD
     #[Route('/admin/user/add', name: 'app_admin_user_add', methods: ['POST'])]
     public function addUser(
         Request $request,
@@ -160,6 +166,8 @@ class AdminController extends AbstractController
         ]);
     }
 
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
     private function getStatistics(UserRepository $userRepository): array
     {
         $users = $userRepository->findAll();

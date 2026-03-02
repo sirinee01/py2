@@ -20,7 +20,12 @@ security:
                 check_path: app_login
                 enable_csrf: true
                 default_target_path: app_dashboard
+<<<<<<< HEAD
                 username_parameter: _username
+=======
+                username_parameter: _username  # This should be 'email' usually
+                password_parameter: _password  # Add this line
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
             logout:
                 path: app_logout
                 target: app_login
@@ -28,13 +33,17 @@ security:
     access_control:
         # Admin routes
         - { path: ^/admin, roles: ROLE_ADMIN }
+<<<<<<< HEAD
         - { path: ^/admin/support, roles: ROLE_ADMIN }
+=======
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
         
         # Coach routes
         - { path: ^/coach, roles: ROLE_COACH }
         
         # Athlete routes
         - { path: ^/athlete, roles: ROLE_ATHLETE }
+<<<<<<< HEAD
         - { path: ^/support, roles: ROLE_ATHLETE }
         
         # Profile and Dashboard routes (authenticated users only)
@@ -42,10 +51,19 @@ security:
         - { path: ^/dashboard, roles: IS_AUTHENTICATED }
         - { path: ^/chatbot, roles: IS_AUTHENTICATED }
         - { path: ^/api/chatbot, roles: IS_AUTHENTICATED }
+=======
+        
+        # Dashboard for all authenticated users
+        - { path: ^/dashboard, roles: IS_AUTHENTICATED_FULLY }  # FIXED: Use IS_AUTHENTICATED_FULLY instead
+        
+        # Onboarding routes - add this!
+        - { path: ^/onboarding, roles: IS_AUTHENTICATED_FULLY }
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
         
         # Public routes
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
+<<<<<<< HEAD
         - { path: ^/verify-email, roles: PUBLIC_ACCESS }
         - { path: ^/resend-verification, roles: PUBLIC_ACCESS }
         - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
@@ -54,3 +72,9 @@ security:
         - { path: ^/, roles: PUBLIC_ACCESS }
         - { path: ^/admin/competition, roles: ROLE_ADMIN }
         - { path: ^/athlete/competition, roles: ROLE_ATHLETE }
+=======
+        
+        # Home page - keep public
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }  # Remove duplicate
+>>>>>>> 6857de554cfd071bc09489d64f6ff7fcfbf24b63
