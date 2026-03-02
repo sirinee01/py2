@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Manage Competitions - Admin Panel{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">Manage Competitions</h1>
+                <a href="{{ path('app_admin_competition_new') }}" class="btn btn-primary-custom">
+                    <i class="fas fa-plus"></i> Create New Competition
+                </a>
+            </div>
+
+            {% if competitions is empty %}
+                <div class="alert alert-info">
+                    No competitions found. <a href="{{ path('app_admin_competition_new') }}">Create your first competition</a>
+                </div>
+            {% else %}
+                <div class="row">
+                    {% for competition in competitions %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card card-custom h-100">
+                            {% if competition.image %}
+                                <img src="{{ asset('uploads/competitions/' ~ competition.image) }}" 
+                                     class="card-img-top" 
+                                     alt="{{ competition.name }}"
+                                     style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center" 
+                                     style="height: 200px;">
+                                    <i class="fas fa-trophy fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="card-body">
+                                <h5 class="card-title">{{ competition.name }}</h5>
+                                <p class="card-text text-muted small">
+                                    <i class="fas fa-calendar"></i> 
+                                    {{ competition.startDate|date('M d, Y') }} - {{ competition.endDate|date('M d, Y') }}
+                                </p>
+                                <p class="card-text">
+                                    <i class="fas fa-map-marker-alt"></i> {{ competition.location }}
+                                </p>
+                                <p class="card-text">
+                                    <i class="fas fa-users"></i> 
+                                    Participants: {{ competition.applications|length }}/{{ competition.maxParticipants }}
+                                </p>
+                                <span class="badge {% if competition.status == 'upcoming' %}bg-warning{% elseif competition.status == 'ongoing' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ competition.status|capitalize }}
+                                </span>
+                                
+                                {% if competition.winner %}
+                                    <div class="mt-2">
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-crown"></i> Winner: {{ competition.winner }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ path('app_admin_competition_applications', {'id': competition.id}) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-list"></i> Applications
+                                    </a>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                type="button" 
+                                                data-bs-toggle="dropdown">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="#">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </a>
+                                            </li>
+                                            {% if competition.status == 'upcoming' %}
+                                            <li>
+                                                <a class="dropdown-item" href="#">
+                                                    <i class="fas fa-play"></i> Start Competition
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

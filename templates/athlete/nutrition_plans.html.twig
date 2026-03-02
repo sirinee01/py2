@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nutrition Plans - Athlete Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4" style="color: var(--primary-green);">Nutrition Plans</h1>
+            
+            <div class="row">
+                {% for plan in nutritionPlans %}
+                <div class="col-md-6 mb-4">
+                    <div class="card card-custom h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ plan.name }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">by {{ plan.coach.name }}</h6>
+                            <p class="card-text">{{ plan.description }}</p>
+                            
+                            <div class="mb-3">
+                                <strong>Duration:</strong> {{ plan.duration }} days<br>
+                                <strong>Objective:</strong> {{ plan.objective }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong>Meals in this plan:</strong>
+                                <ul class="list-group list-group-flush">
+                                    {% for meal in plan.meals|slice(0, 3) %}
+                                    <li class="list-group-item">
+                                        {{ meal.name }} - {{ meal.calories }} cal
+                                    </li>
+                                    {% else %}
+                                    <li class="list-group-item text-muted">No meals assigned yet</li>
+                                    {% endfor %}
+                                </ul>
+                                {% if plan.meals|length > 3 %}
+                                <small class="text-muted">+ {{ plan.meals|length - 3 }} more meals</small>
+                                {% endif %}
+                            </div>
+                            
+                            <a href="{{ path('app_athlete_nutrition_plan_view', {'id': plan.id}) }}" class="btn btn-primary-custom">View Full Plan</a>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">Created: {{ plan.createdAt|date('Y-m-d') }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="card card-custom">
+                        <div class="card-body text-center">
+                            <p class="text-muted">No nutrition plans available yet.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

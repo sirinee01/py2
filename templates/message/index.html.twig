@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Messages{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 style="color: var(--primary-green);">Messages</h1>
+            </div>
+
+            <!-- Available Users Section (Start New Conversation) -->
+            {% if availableUsers|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Start a New Conversation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for availableUser in availableUsers %}
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center p-3 border rounded-3" style="background: #f8f9fa;">
+                                <div class="avatar-circle me-3" style="width: 45px; height: 45px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                    {{ availableUser.name|first|upper }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ availableUser.name }}</h6>
+                                    <small class="text-muted">{{ availableUser.roleType|capitalize }}</small>
+                                </div>
+                                <a href="{{ path('app_messages_start', {'userId': availableUser.id}) }}" 
+                                   class="btn btn-sm btn-outline-primary rounded-circle"
+                                   style="width: 35px; height: 35px;"
+                                   title="Start conversation">
+                                    <i class="fas fa-comment"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Existing Conversations -->
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Your Conversations</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if conversations|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for conversation in conversations %}
+                                {% set other = conversation.getOtherParticipant(user) %}
+                                {% set lastMessage = conversation.getLastMessage() %}
+                                {% set unreadCount = conversation.messages|filter(m => m.sender != user and not m.isRead)|length %}
+                                <a href="{{ path('app_messages_conversation', {'id': conversation.id}) }}" 
+                                   class="list-group-item list-group-item-action d-flex align-items-center p-4"
+                                   style="border-left: none; border-right: none; {% if unreadCount > 0 %}background-color: #f0f9ff;{% endif %}">
+                                    <div class="avatar-circle me-3" style="width: 50px; height: 50px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.2rem;">
+                                        {{ other.name|first|upper }}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="mb-0 {% if unreadCount > 0 %}fw-bold{% endif %}">{{ other.name }}</h6>
+                                            <small class="text-muted">{{ lastMessage ? lastMessage.createdAt|date('M d, H:i') : '' }}</small>
+                                        </div>
+                                        <p class="mb-0 text-truncate" style="max-width: 400px;">
+                                            {% if lastMessage %}
+                                                {% if lastMessage.sender == user %}
+                                                    <span class="text-muted">You: </span>
+                                                {% endif %}
+                                                <span {% if unreadCount > 0 %}class="fw-semibold"{% endif %}>{{ lastMessage.content }}</span>
+                                            {% else %}
+                                                <span class="text-muted fst-italic">No messages yet</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    {% if unreadCount > 0 %}
+                                        <span class="badge bg-danger rounded-pill ms-3">{{ unreadCount }}</span>
+                                    {% endif %}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                            <h6 class="text-muted">No conversations yet</h6>
+                            <p class="text-muted small">
+                                {% if availableUsers|length > 0 %}
+                                    Start a conversation with one of the users above!
+                                {% else %}
+                                    No users available to message at this time.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    transition: transform 0.2s;
+}
+.avatar-circle:hover {
+    transform: scale(1.05);
+}
+.list-group-item {
+    transition: background-color 0.2s;
+}
+.list-group-item:hover {
+    background-color: #f8f9fa !important;
+}
+</style>
+{% endblock %}

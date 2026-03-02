@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Applications - Athlete Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4" style="color: var(--primary-green);">My Competition Applications</h1>
+            
+            {% if applications is empty %}
+                <div class="alert alert-info">
+                    You haven't applied for any competitions yet.
+                    <a href="{{ path('app_athlete_competitions') }}" class="alert-link">Browse available competitions</a>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Competition</th>
+                                <th>Applied Date</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for application in applications %}
+                            <tr>
+                                <td>
+                                    <strong>{{ application.competition.name }}</strong><br>
+                                    <small class="text-muted">
+                                        {{ application.competition.startDate|date('M d, Y') }} - {{ application.competition.location }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {{ application.appliedAt|date('M d, Y H:i') }}
+                                </td>
+                                <td>
+                                    <span class="badge {% if application.status == 'pending' %}bg-warning{% elseif application.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ application.status|capitalize }}
+                                    </span>
+                                    {% if application.approvedAt %}
+                                        <br><small>Approved: {{ application.approvedAt|date('M d, Y') }}</small>
+                                    {% elseif application.rejectedAt %}
+                                        <br><small>Rejected: {{ application.rejectedAt|date('M d, Y') }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if application.notes %}
+                                        {{ application.notes }}
+                                    {% else %}
+                                        <span class="text-muted">No notes</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_athlete_competition_view', {'id': application.competition.id}) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    {% if application.status == 'pending' %}
+                                        <a href="{{ path('app_athlete_application_withdraw', {'id': application.id}) }}" 
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('Are you sure you want to withdraw this application?')">
+                                            <i class="fas fa-times"></i> Withdraw
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ path('app_athlete_competitions') }}" class="btn btn-primary-custom">
+                    <i class="fas fa-trophy"></i> Browse Competitions
+                </a>
+                <a href="{{ path('app_athlete_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

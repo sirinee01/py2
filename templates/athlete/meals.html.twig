@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}All Meals - Athlete Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4" style="color: var(--primary-green);">All Meals</h1>
+            
+            <div class="row">
+                {% for meal in meals %}
+                <div class="col-md-4 mb-4">
+                    <div class="card card-custom h-100">
+                        {% if meal.image %}
+                        <img src="{{ asset('uploads/meals/' ~ meal.image) }}" class="card-img-top" alt="{{ meal.name }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <span style="color: var(--primary-green); font-size: 1.5rem;">No Image</span>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ meal.name }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">by {{ meal.coach.name }}</h6>
+                            <p class="card-text">{{ meal.description }}</p>
+                            
+                            <div class="mb-3">
+                                <strong>Nutrition Facts:</strong><br>
+                                <span class="badge bg-primary">{{ meal.calories }} calories</span>
+                                {% if meal.protein %}<span class="badge bg-success ms-1">{{ meal.protein }}g protein</span>{% endif %}
+                                {% if meal.carbs %}<span class="badge bg-warning ms-1">{{ meal.carbs }}g carbs</span>{% endif %}
+                                {% if meal.fat %}<span class="badge bg-danger ms-1">{{ meal.fat }}g fat</span>{% endif %}
+                            </div>
+                            
+                            {% if meal.nutritionPlans|length > 0 %}
+                            <div class="mb-3">
+                                <strong>Part of plans:</strong>
+                                <ul class="list-unstyled">
+                                    {% for plan in meal.nutritionPlans %}
+                                    <li><small>{{ plan.name }}</small></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">Added: {{ meal.createdAt|date('Y-m-d') }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="card card-custom">
+                        <div class="card-body text-center">
+                            <p class="text-muted">No meals available yet.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Back Button -->
+            <div class="mt-4">
+                <a href="{{ path('app_athlete_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

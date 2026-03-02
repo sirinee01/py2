@@ -1,0 +1,277 @@
+{# templates/onboarding/step3.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Nutrition Details - Step 3{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --primary-green: #10b981;
+        --primary-dark: #059669;
+    }
+    
+    .onboarding-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .onboarding-card {
+        background: white;
+        border-radius: 30px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        width: 100%;
+        max-width: 800px;
+        overflow: hidden;
+        animation: slideUp 0.5s ease;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .progress-header {
+        background: linear-gradient(135deg, var(--primary-green), #3b82f6);
+        padding: 30px;
+        color: white;
+    }
+    
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-50%);
+        z-index: 1;
+    }
+    
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+    
+    .step.active {
+        background: white;
+        color: var(--primary-green);
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(255,255,255,0.5);
+    }
+    
+    .step.completed {
+        background: white;
+        color: var(--primary-green);
+    }
+    
+    .step.completed::after {
+        content: '✓';
+    }
+    
+    .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 4px;
+        margin-top: 20px;
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background: white;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        width: {{ progress }}%;
+    }
+    
+    .onboarding-body {
+        padding: 40px;
+    }
+    
+    .step-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .step-subtitle {
+        color: #666;
+        margin-bottom: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 15px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        outline: none;
+    }
+    
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    .btn-next {
+        background: linear-gradient(135deg, var(--primary-green), #3b82f6);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+    
+    .btn-next:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-prev {
+        background: white;
+        color: var(--primary-green);
+        border: 2px solid var(--primary-green);
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        text-decoration: none;
+        text-align: center;
+    }
+    
+    .btn-prev:hover {
+        background: #f0fdf4;
+        transform: translateY(-2px);
+    }
+    
+    .macro-hint {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="onboarding-page">
+    <div class="onboarding-card">
+        <div class="progress-header">
+            <div class="progress-steps">
+                <div class="step completed">1</div>
+                <div class="step completed">2</div>
+                <div class="step active">3</div>
+                <div class="step">4</div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: {{ progress }}%"></div>
+            </div>
+        </div>
+        
+        <div class="onboarding-body">
+            <h1 class="step-title">Nutrition Details 🍎</h1>
+            <p class="step-subtitle">Help us understand your eating habits</p>
+            
+            {{ form_start(form, {'attr': {'id': 'onboardingForm'}}) }}
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.proteinIntake.vars.label }}</label>
+                            {{ form_widget(form.proteinIntake) }}
+                            <div class="macro-hint">Helps with muscle recovery</div>
+                            {{ form_errors(form.proteinIntake) }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.carbIntake.vars.label }}</label>
+                            {{ form_widget(form.carbIntake) }}
+                            <div class="macro-hint">Main energy source</div>
+                            {{ form_errors(form.carbIntake) }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.fatIntake.vars.label }}</label>
+                            {{ form_widget(form.fatIntake) }}
+                            <div class="macro-hint">Essential for hormones</div>
+                            {{ form_errors(form.fatIntake) }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">{{ form.dietaryRestrictions.vars.label }}</label>
+                    {{ form_widget(form.dietaryRestrictions) }}
+                    {{ form_errors(form.dietaryRestrictions) }}
+                </div>
+                
+                <button type="submit" class="btn-next">
+                    Continue to Measurements
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+                
+                <a href="{{ path('app_onboarding_step2') }}" class="btn-prev d-block">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to Goals
+                </a>
+                
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

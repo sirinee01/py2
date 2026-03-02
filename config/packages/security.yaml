@@ -1,0 +1,51 @@
+security:
+    enable_authenticator_manager: true
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User: 'auto'
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: app_dashboard
+                username_parameter: _username  # This should be 'email' usually
+                password_parameter: _password  # Add this line
+            logout:
+                path: app_logout
+                target: app_login
+
+    access_control:
+        # Admin routes
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        
+        # Coach routes
+        - { path: ^/coach, roles: ROLE_COACH }
+        
+        # Athlete routes
+        - { path: ^/athlete, roles: ROLE_ATHLETE }
+        
+        # Dashboard for all authenticated users
+        - { path: ^/dashboard, roles: IS_AUTHENTICATED_FULLY }  # FIXED: Use IS_AUTHENTICATED_FULLY instead
+        
+        # Onboarding routes - add this!
+        - { path: ^/onboarding, roles: IS_AUTHENTICATED_FULLY }
+        
+        # Public routes
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        
+        # Home page - keep public
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }  # Remove duplicate

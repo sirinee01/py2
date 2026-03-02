@@ -1,0 +1,774 @@
+{# templates/home/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Welcome to Sports Management{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --primary-green: #10b981;
+        --primary-dark: #059669;
+        --primary-light: #d1fae5;
+        --secondary-blue: #3b82f6;
+        --accent-orange: #f97316;
+        --dark-bg: #1f2937;
+        --light-bg: #f9fafb;
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-blue) 100%);
+        color: white;
+        padding: 80px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite reverse;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 10;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: slideUp 1s ease;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        margin-bottom: 30px;
+        opacity: 0.95;
+        animation: slideUp 1s ease 0.2s both;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(16,185,129,0.15);
+        border-color: var(--primary-green);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-green) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+        transform: rotate(360deg) scale(1.1);
+    }
+    
+    .feature-icon i {
+        font-size: 2rem;
+        color: white;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px rgba(16,185,129,0.2);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary-green);
+        margin-bottom: 5px;
+    }
+    
+    .blog-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .blog-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(16,185,129,0.15);
+    }
+    
+    .blog-image {
+        height: 200px;
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-blue) 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .blog-image i {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3rem;
+        color: rgba(255,255,255,0.5);
+    }
+    
+    .blog-content {
+        padding: 20px;
+    }
+    
+    .blog-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--dark-bg);
+    }
+    
+    .blog-meta {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .blog-meta i {
+        color: var(--primary-green);
+        margin-right: 5px;
+    }
+    
+    .forum-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .forum-card:hover {
+        border-color: var(--primary-green);
+        box-shadow: 0 4px 12px rgba(16,185,129,0.1);
+        transform: translateX(5px);
+    }
+    
+    .forum-category {
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--primary-light);
+        color: var(--primary-green);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .forum-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .forum-stats {
+        display: flex;
+        gap: 15px;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+    
+    .btn-gradient {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-blue) 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16,185,129,0.4);
+        color: white;
+    }
+    
+    .btn-outline-gradient {
+        background: transparent;
+        border: 2px solid var(--primary-green);
+        color: var(--primary-green);
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-gradient:hover {
+        background: var(--primary-green);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .testimonial-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        position: relative;
+    }
+    
+    .testimonial-card::before {
+        content: '"';
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 4rem;
+        color: var(--primary-light);
+        font-family: serif;
+        opacity: 0.5;
+    }
+    
+    .testimonial-author {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .author-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-blue) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .footer {
+        background: var(--dark-bg);
+        color: white;
+        padding: 60px 0 20px;
+    }
+    
+    .footer a {
+        color: #9ca3af;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .footer a:hover {
+        color: var(--primary-green);
+    }
+    
+    .social-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .social-icon:hover {
+        background: var(--primary-green);
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: var(--dark-bg); position: sticky; top: 0; z-index: 1000;">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{{ path('app_home') }}">
+            <i class="fas fa-dumbbell me-2" style="color: var(--primary-green); font-size: 1.5rem;"></i>
+            <span style="font-weight: 700;">SPORTS<span style="color: var(--primary-green);">MANAGEMENT</span></span>
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#home">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#features">Features</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="blogDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-blog me-1"></i>Blog & Forum
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark" style="background: var(--dark-bg);">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-newspaper me-2"></i>Latest Articles</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-comments me-2"></i>Forum Discussions</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-tags me-2"></i>Categories</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-plus-circle me-2"></i>Create Post</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#pricing">Pricing</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#contact">Contact</a>
+                </li>
+            </ul>
+            
+            <div class="d-flex">
+                {% if app.user %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>{{ app.user.name }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ path('app_dashboard') }}">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Logout</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="btn btn-outline-light me-2">Login</a>
+                    <a href="{{ path('app_register') }}" class="btn" style="background: var(--primary-green); color: white;">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section id="home" class="hero-section">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title">Transform Your Athletic Journey</h1>
+                <p class="hero-subtitle">Join thousands of athletes and coaches using our platform to track performance, manage nutrition, and achieve their goals.</p>
+                <div class="d-flex gap-3">
+                    <a href="{{ path('app_register') }}" class="btn btn-gradient btn-lg">Get Started Free</a>
+                    <a href="#features" class="btn btn-outline-gradient btn-lg">Learn More</a>
+                </div>
+                <div class="row mt-5">
+                    <div class="col-4">
+                        <div class="stat-card">
+                            <div class="stat-number">10K+</div>
+                            <div class="text-muted">Active Users</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card">
+                            <div class="stat-number">500+</div>
+                            <div class="text-muted">Coaches</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card">
+                            <div class="stat-number">1K+</div>
+                            <div class="text-muted">Success Stories</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="https://via.placeholder.com/600x400/10b981/ffffff?text=Sports+Analytics" alt="Sports Analytics" class="img-fluid rounded-4 shadow-lg" style="animation: float 6s ease-in-out infinite;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5" style="background: var(--light-bg);">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 style="color: var(--primary-green); font-weight: 700;">Why Choose Us?</h2>
+            <p class="lead text-muted">Everything you need to succeed in one platform</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Performance Tracking</h4>
+                    <p class="text-muted">Monitor your progress with detailed analytics and insights to optimize your training.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h4>Nutrition Planning</h4>
+                    <p class="text-muted">Get personalized meal plans from expert coaches to fuel your performance.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4>Community Support</h4>
+                    <p class="text-muted">Connect with athletes and coaches in our active community forum.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h4>Competition Management</h4>
+                    <p class="text-muted">Organize and participate in competitions with ease.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h4>Health Analytics</h4>
+                    <p class="text-muted">Track vital metrics and get AI-powered recommendations.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h4>Smart Scheduling</h4>
+                    <p class="text-muted">Plan your workouts and track your calendar efficiently.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Blog/Forum Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row mb-5">
+            <div class="col-md-8">
+                <h2 style="color: var(--primary-green); font-weight: 700;">Latest from Blog & Forum</h2>
+                <p class="text-muted">Stay updated with the latest tips, discussions, and community insights</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="#" class="btn btn-gradient">View All Posts <i class="fas fa-arrow-right ms-2"></i></a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="row">
+                    <!-- Blog Posts -->
+                    <div class="col-md-6 mb-4">
+                        <div class="blog-card">
+                            <div class="blog-image">
+                                <i class="fas fa-running"></i>
+                            </div>
+                            <div class="blog-content">
+                                <div class="blog-meta">
+                                    <span><i class="fas fa-user"></i> John Doe</span>
+                                    <span><i class="fas fa-calendar"></i> 2 hours ago</span>
+                                </div>
+                                <h5 class="blog-title">10 Tips for Better Endurance Training</h5>
+                                <p class="text-muted small">Learn how to improve your stamina and push through your limits with these expert tips...</p>
+                                <a href="#" class="btn btn-link p-0" style="color: var(--primary-green);">Read More <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="blog-card">
+                            <div class="blog-image">
+                                <i class="fas fa-apple-alt"></i>
+                            </div>
+                            <div class="blog-content">
+                                <div class="blog-meta">
+                                    <span><i class="fas fa-user"></i> Sarah Smith</span>
+                                    <span><i class="fas fa-calendar"></i> 5 hours ago</span>
+                                </div>
+                                <h5 class="blog-title">Nutrition Guide for Marathon Runners</h5>
+                                <p class="text-muted small">Discover the best foods and meal timing to optimize your marathon performance...</p>
+                                <a href="#" class="btn btn-link p-0" style="color: var(--primary-green);">Read More <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="blog-card">
+                            <div class="blog-image">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="blog-content">
+                                <div class="blog-meta">
+                                    <span><i class="fas fa-user"></i> Mike Johnson</span>
+                                    <span><i class="fas fa-calendar"></i> 1 day ago</span>
+                                </div>
+                                <h5 class="blog-title">Strength Training for Beginners</h5>
+                                <p class="text-muted small">A complete guide to starting your strength training journey safely and effectively...</p>
+                                <a href="#" class="btn btn-link p-0" style="color: var(--primary-green);">Read More <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="blog-card">
+                            <div class="blog-image">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="blog-content">
+                                <div class="blog-meta">
+                                    <span><i class="fas fa-user"></i> Emily Chen</span>
+                                    <span><i class="fas fa-calendar"></i> 2 days ago</span>
+                                </div>
+                                <h5 class="blog-title">Mental Preparation for Competitions</h5>
+                                <p class="text-muted small">Techniques to stay focused and calm before your big competition day...</p>
+                                <a href="#" class="btn btn-link p-0" style="color: var(--primary-green);">Read More <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Forum Sidebar -->
+            <div class="col-lg-4">
+                <div class="bg-light p-4 rounded-4">
+                    <h5 class="mb-4">🔥 Hot Discussions</h5>
+                    
+                    <div class="forum-card">
+                        <span class="forum-category">Training</span>
+                        <h6 class="forum-title">Best pre-workout meals?</h6>
+                        <div class="forum-stats">
+                            <span><i class="fas fa-comment"></i> 24 replies</span>
+                            <span><i class="fas fa-eye"></i> 156 views</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forum-card">
+                        <span class="forum-category">Nutrition</span>
+                        <h6 class="forum-title">How much protein do I really need?</h6>
+                        <div class="forum-stats">
+                            <span><i class="fas fa-comment"></i> 18 replies</span>
+                            <span><i class="fas fa-eye"></i> 203 views</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forum-card">
+                        <span class="forum-category">Recovery</span>
+                        <h6 class="forum-title">Tips for faster muscle recovery</h6>
+                        <div class="forum-stats">
+                            <span><i class="fas fa-comment"></i> 31 replies</span>
+                            <span><i class="fas fa-eye"></i> 278 views</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forum-card">
+                        <span class="forum-category">Competition</span>
+                        <h6 class="forum-title">Nervous before competition?</h6>
+                        <div class="forum-stats">
+                            <span><i class="fas fa-comment"></i> 15 replies</span>
+                            <span><i class="fas fa-eye"></i> 98 views</span>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="btn btn-outline-gradient w-100 mt-3">Join the Discussion <i class="fas fa-arrow-right ms-2"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-5" style="background: linear-gradient(135deg, var(--primary-light) 0%, white 100%);">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 style="color: var(--primary-green); font-weight: 700;">Success Stories</h2>
+            <p class="lead text-muted">Hear from athletes who transformed their performance</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <p class="fst-italic">"This platform completely changed how I train. The analytics helped me improve my marathon time by 15 minutes!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">M</div>
+                        <div>
+                            <h6 class="mb-0">Marcus Williams</h6>
+                            <small class="text-muted">Marathon Runner</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <p class="fst-italic">"As a coach, I can easily manage all my athletes' nutrition plans and track their progress. It's a game-changer!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">S</div>
+                        <div>
+                            <h6 class="mb-0">Sarah Johnson</h6>
+                            <small class="text-muted">Professional Coach</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <p class="fst-italic">"The community forum is amazing. I've learned so much from other athletes and coaches."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">A</div>
+                        <div>
+                            <h6 class="mb-0">Alex Chen</h6>
+                            <small class="text-muted">Triathlete</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5" style="background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-blue) 100%);">
+    <div class="container py-5 text-center text-white">
+        <h2 class="display-5 fw-bold mb-4">Ready to Start Your Journey?</h2>
+        <p class="lead mb-4">Join thousands of athletes achieving their goals with our platform.</p>
+        <a href="{{ path('app_register') }}" class="btn btn-light btn-lg px-5 py-3 rounded-pill" style="color: var(--primary-green); font-weight: 600;">
+            Get Started Free <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row gy-4">
+            <div class="col-lg-4">
+                <h5 class="mb-4"><i class="fas fa-dumbbell me-2" style="color: var(--primary-green);"></i>SportsManagement</h5>
+                <p class="text-muted">Empowering athletes and coaches with cutting-edge tools to achieve peak performance.</p>
+                <div class="mt-4">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            
+            <div class="col-lg-2">
+                <h5 class="mb-4">Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#">About Us</a></li>
+                    <li class="mb-2"><a href="#">Features</a></li>
+                    <li class="mb-2"><a href="#">Pricing</a></li>
+                    <li class="mb-2"><a href="#">Blog</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-lg-3">
+                <h5 class="mb-4">Support</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#">Help Center</a></li>
+                    <li class="mb-2"><a href="#">FAQs</a></li>
+                    <li class="mb-2"><a href="#">Contact Us</a></li>
+                    <li class="mb-2"><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-lg-3">
+                <h5 class="mb-4">Contact Info</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-map-marker-alt me-2" style="color: var(--primary-green);"></i>123 Sports Ave, Fitness City</li>
+                    <li class="mb-2"><i class="fas fa-phone me-2" style="color: var(--primary-green);"></i>+1 (555) 123-4567</li>
+                    <li class="mb-2"><i class="fas fa-envelope me-2" style="color: var(--primary-green);"></i>info@sportsmanagement.com</li>
+                </ul>
+            </div>
+        </div>
+        
+        <hr class="mt-4" style="background: rgba(255,255,255,0.1);">
+        
+        <div class="text-center mt-4">
+            <p class="text-muted small mb-0">&copy; {{ "now"|date("Y") }} SportsManagement. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
+});
+</script>
+{% endblock %}

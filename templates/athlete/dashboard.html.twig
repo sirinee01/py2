@@ -1,0 +1,939 @@
+{# templates/athlete/dashboard.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}My Nutrition Dashboard - Athlete{% endblock %}
+
+{% block body %}
+<div class="athlete-wrapper" style="background: #f8f9fa; min-height: 100vh;">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm px-4" style="border-bottom: 3px solid var(--primary-green);">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ path('app_athlete_dashboard') }}">
+                <span style="color: var(--primary-green); font-size: 1.8rem; font-weight: 700;">⚡</span>
+                <span class="ms-2" style="font-weight: 600; color: #1a2e35;">MyNutrition</span>
+            </a>
+            
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle text-dark" type="button" data-bs-toggle="dropdown">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle me-2" style="width: 40px; height: 40px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                {{ app.user.name|first|upper }}
+                            </div>
+                            <span>{{ app.user.name }}</span>
+                        </div>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ path('app_athlete_progress') }}"><i class="fas fa-chart-line me-2"></i>Progress</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Welcome Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 16px; background: linear-gradient(135deg, #1a2e35 0%, #0f1e24 100%);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="text-white mb-2">Welcome back, {{ app.user.name }}! 👋</h2>
+                                <p class="text-white-50 mb-0">{{ "now"|date('l, F j, Y') }}</p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-light text-dark p-3 rounded-3">
+                                    <i class="fas fa-fire me-2" style="color: var(--primary-green);"></i>
+                                    <strong>Daily Goal Progress</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if assignedPlan %}
+            {# Calculate percentages safely with division by zero checks #}
+            
+            {# Calories #}
+            {% set caloriesTarget = dailyTarget.calories|default(2000) %}
+            {% if caloriesTarget > 0 %}
+                {% set caloriesPercentage = (todaysStats.caloriesConsumed|default(0) / caloriesTarget * 100) %}
+            {% else %}
+                {% set caloriesPercentage = 0 %}
+            {% endif %}
+            {% if caloriesPercentage > 100 %}{% set caloriesPercentage = 100 %}{% endif %}
+            
+            {# Water #}
+            {% set waterTarget = dailyTarget.water|default(2.5) %}
+            {% if waterTarget > 0 %}
+                {% set waterPercentage = (todaysStats.waterIntake|default(0) / waterTarget * 100) %}
+            {% else %}
+                {% set waterPercentage = 0 %}
+            {% endif %}
+            {% if waterPercentage > 100 %}{% set waterPercentage = 100 %}{% endif %}
+
+            {# Protein #}
+            {% set proteinTarget = dailyTarget.protein|default(150) %}
+            {% if proteinTarget > 0 %}
+                {% set proteinPercentage = (todaysStats.proteinConsumed|default(0) / proteinTarget * 100) %}
+            {% else %}
+                {% set proteinPercentage = 0 %}
+            {% endif %}
+            {% if proteinPercentage > 100 %}{% set proteinPercentage = 100 %}{% endif %}
+
+            {# Carbs #}
+            {% set carbsTarget = dailyTarget.carbs|default(200) %}
+            {% if carbsTarget > 0 %}
+                {% set carbsPercentage = (todaysStats.carbsConsumed|default(0) / carbsTarget * 100) %}
+            {% else %}
+                {% set carbsPercentage = 0 %}
+            {% endif %}
+            {% if carbsPercentage > 100 %}{% set carbsPercentage = 100 %}{% endif %}
+
+            {# Fat #}
+            {% set fatTarget = dailyTarget.fat|default(50) %}
+            {% if fatTarget > 0 %}
+                {% set fatPercentage = (todaysStats.fatConsumed|default(0) / fatTarget * 100) %}
+            {% else %}
+                {% set fatPercentage = 0 %}
+            {% endif %}
+            {% if fatPercentage > 100 %}{% set fatPercentage = 100 %}{% endif %}
+
+            <!-- Daily Progress Overview -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="text-muted mb-0">Calories</h6>
+                                <div class="icon-circle bg-success bg-opacity-10 p-2 rounded-circle">
+                                    <i class="fas fa-bolt" style="color: var(--primary-green);"></i>
+                                </div>
+                            </div>
+                            <h3 class="mb-2">{{ todaysStats.caloriesConsumed|default(0) }} <small class="text-muted" style="font-size: 0.9rem;">/ {{ caloriesTarget }}</small></h3>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" style="width: {{ caloriesPercentage }}%; background: var(--primary-green);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="text-muted mb-0">Water</h6>
+                                <div class="icon-circle bg-info bg-opacity-10 p-2 rounded-circle">
+                                    <i class="fas fa-tint" style="color: #0dcaf0;"></i>
+                                </div>
+                            </div>
+                            <h3 class="mb-2">{{ todaysStats.waterIntake|default(0) }}L <small class="text-muted" style="font-size: 0.9rem;">/ {{ waterTarget }}L</small></h3>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: {{ waterPercentage }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="text-muted mb-0">Protein</h6>
+                                <div class="icon-circle bg-warning bg-opacity-10 p-2 rounded-circle">
+                                    <i class="fas fa-dumbbell" style="color: #ffc107;"></i>
+                                </div>
+                            </div>
+                            <h3 class="mb-2">{{ todaysStats.proteinConsumed|default(0) }}g <small class="text-muted" style="font-size: 0.9rem;">/ {{ proteinTarget }}g</small></h3>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: {{ proteinPercentage }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="text-muted mb-0">Overall Progress</h6>
+                                <div class="icon-circle bg-primary bg-opacity-10 p-2 rounded-circle">
+                                    <i class="fas fa-flag-checkered" style="color: #667eea;"></i>
+                                </div>
+                            </div>
+                            <h3 class="mb-2">{{ goalProgress|default(0) }}%</h3>
+                            <p class="text-muted small mb-0">Towards your goal</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Row -->
+            <div class="row">
+                <!-- Left Column - Today's Meals -->
+                <div class="col-lg-8">
+                    <!-- Nutrition Plan Header with Custom Meal Button -->
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                        <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1" style="color: var(--primary-green);">Today's Meals</h5>
+                                <p class="text-muted small mb-0">{{ "now"|date('l, F j, Y') }}</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-success rounded-pill px-4 me-2" data-bs-toggle="modal" data-bs-target="#addCustomMealModal">
+                                    <i class="fas fa-plus-circle me-2"></i>Log Custom Meal
+                                </button>
+                                <a href="{{ path('app_athlete_nutrition_plan_view', {'id': assignedPlan.id}) }}" class="btn btn-outline-success rounded-pill px-4">
+                                    View Full Plan <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Meals by Time -->
+                    {% set mealTimes = ['breakfast', 'lunch', 'dinner', 'snack'] %}
+                    {% for mealTime in mealTimes %}
+                        <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                            <div class="card-header bg-white border-0 p-4">
+                                <h6 class="mb-0 d-flex align-items-center">
+                                    <i class="fas fa-{% if mealTime == 'breakfast' %}sun{% elseif mealTime == 'lunch' %}cloud-sun{% elseif mealTime == 'dinner' %}moon{% else %}cookie{% endif %} me-2" style="color: var(--primary-green);"></i>
+                                    {{ mealTime|capitalize }}
+                                </h6>
+                            </div>
+                            <div class="card-body p-4 pt-0">
+                                {% set mealTimeMeals = todaysMeals[mealTime]|default([]) %}
+                                
+                                {% if mealTimeMeals|length > 0 %}
+                                    {% for meal in mealTimeMeals %}
+                                        <div class="meal-item mb-3 p-3 {% if not loop.last %}border-bottom{% endif %}" 
+                                             style="border-radius: 12px; transition: all 0.3s; {% if meal.consumed %}background-color: rgba(16, 185, 129, 0.05);{% endif %}" 
+                                             onmouseover="this.style.backgroundColor='#f8f9fa'" 
+                                             onmouseout="this.style.backgroundColor='{% if meal.consumed %}rgba(16, 185, 129, 0.05){% else %}transparent{% endif %}'">
+                                            
+                                            <div class="d-flex align-items-start">
+                                                {% if meal.image is defined and meal.image %}
+                                                    <img src="{{ asset('uploads/meals/' ~ meal.image) }}" alt="{{ meal.name }}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;" class="me-3">
+                                                {% else %}
+                                                    <div class="bg-light me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; border-radius: 8px;">
+                                                        <i class="fas fa-utensils" style="color: var(--primary-green);"></i>
+                                                    </div>
+                                                {% endif %}
+                                                
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div style="flex: 1;">
+                                                            <div class="d-flex align-items-center mb-1">
+                                                                <h6 class="mb-0 me-2">
+                                                                    {{ meal.name }}
+                                                                </h6>
+                                                                {% if meal.type is defined and meal.type == 'custom' %}
+                                                                    <span class="badge bg-warning">Custom</span>
+                                                                {% endif %}
+                                                                {% if meal.consumed %}
+                                                                    <span class="badge bg-success ms-2">✓ Completed</span>
+                                                                {% endif %}
+                                                            </div>
+                                                            <p class="text-muted small mb-2">{{ meal.description|default('')|slice(0, 60) }}{% if meal.description|length > 60 %}...{% endif %}</p>
+                                                            
+                                                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                                                <span class="badge bg-primary">{{ meal.calories }} cal</span>
+                                                                {% if meal.protein is defined and meal.protein %}
+                                                                    <span class="badge bg-warning">{{ meal.protein }}g P</span>
+                                                                {% endif %}
+                                                                {% if meal.carbs is defined and meal.carbs %}
+                                                                    <span class="badge bg-info">{{ meal.carbs }}g C</span>
+                                                                {% endif %}
+                                                                {% if meal.fat is defined and meal.fat %}
+                                                                    <span class="badge bg-secondary">{{ meal.fat }}g F</span>
+                                                                {% endif %}
+                                                            </div>
+                                                            
+                                                            {% if meal.reason is defined and meal.reason %}
+                                                                <small class="text-muted d-block">
+                                                                    <i class="fas fa-comment me-1"></i>{{ meal.reason }}
+                                                                </small>
+                                                            {% endif %}
+                                                        </div>
+                                                        
+                                                        <div class="d-flex align-items-center ms-3">
+                                                            {% if meal.type is not defined or meal.type == 'plan' %}
+                                                                <div class="me-2">
+                                                                    <select class="form-select form-select-sm servings-select" style="width: 65px;" data-meal-id="{{ meal.id }}" {% if not meal.consumed %}disabled{% endif %}>
+                                                                        <option value="0.5" {% if meal.servings is defined and meal.servings == 0.5 %}selected{% endif %}>0.5x</option>
+                                                                        <option value="1" {% if meal.servings is not defined or meal.servings == 1 %}selected{% endif %}>1x</option>
+                                                                        <option value="1.5" {% if meal.servings is defined and meal.servings == 1.5 %}selected{% endif %}>1.5x</option>
+                                                                        <option value="2" {% if meal.servings is defined and meal.servings == 2 %}selected{% endif %}>2x</option>
+                                                                    </select>
+                                                                </div>
+                                                                <button class="btn btn-sm {% if meal.consumed %}btn-success{% else %}btn-outline-success{% endif %} rounded-circle meal-toggle" 
+                                                                        data-meal-id="{{ meal.id }}" 
+                                                                        data-consumed="{{ meal.consumed ? 'true' : 'false' }}"
+                                                                        style="width: 36px; height: 36px;">
+                                                                    <i class="fas {% if meal.consumed %}fa-check{% else %}fa-check{% endif %}"></i>
+                                                                </button>
+                                                            {% else %}
+                                                                <button class="btn btn-sm btn-outline-danger rounded-circle delete-custom-meal" 
+                                                                        data-meal-id="{{ meal.id }}"
+                                                                        style="width: 36px; height: 36px;">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center py-4">
+                                        <div class="empty-state">
+                                            <i class="fas fa-utensils fa-3x text-muted mb-3" style="opacity: 0.3;"></i>
+                                            <p class="text-muted mb-3">No {{ mealTime }} meals planned</p>
+                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addCustomMealModal" onclick="setMealTime('{{ mealTime }}')">
+                                                <i class="fas fa-plus-circle me-2"></i>Log Custom {{ mealTime|capitalize }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Right Column - Progress Tracking -->
+                <div class="col-lg-4">
+                    <!-- Water Intake Tracker -->
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                        <div class="card-header bg-white border-0 p-4">
+                            <h5 class="mb-0" style="color: var(--primary-green);">Water Intake</h5>
+                        </div>
+                        <div class="card-body p-4 pt-0">
+                            {% set waterAngle = waterPercentage * 3.6 %}
+                            <div class="text-center mb-4">
+                                <div class="water-circle mx-auto mb-3" style="width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(var(--primary-green) {{ waterAngle }}deg, #e9ecef 0deg); display: flex; align-items: center; justify-content: center;">
+                                    <div style="width: 130px; height: 130px; border-radius: 50%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                        <span class="h3 mb-0" style="color: var(--primary-green);">{{ todaysStats.waterIntake|default(0) }}L</span>
+                                        <small class="text-muted">of {{ waterTarget }}L</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="water-controls">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <button class="btn btn-outline-success water-btn" data-amount="0.25">+250ml</button>
+                                    <button class="btn btn-outline-success water-btn" data-amount="0.5">+500ml</button>
+                                    <button class="btn btn-outline-success water-btn" data-amount="1">+1L</button>
+                                </div>
+                                
+                                <div class="water-history">
+                                    <h6 class="small fw-bold mb-3">Today's Water Log</h6>
+                                    <div class="list-group" id="waterLog">
+                                        {% for log in waterLogs|default([]) %}
+                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span><i class="fas fa-tint me-2" style="color: var(--primary-green);"></i>{{ log.amount }}L</span>
+                                                <small class="text-muted">{{ log.time|date('H:i') }}</small>
+                                            </div>
+                                        {% else %}
+                                            <p class="text-muted small text-center py-3">No water logged yet today</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Macronutrient Breakdown -->
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                        <div class="card-header bg-white border-0 p-4">
+                            <h5 class="mb-0" style="color: var(--primary-green);">Macros Today</h5>
+                        </div>
+                        <div class="card-body p-4 pt-0">
+                            <div class="macro-item mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Protein</span>
+                                    <span class="fw-bold protein-value">{{ todaysStats.proteinConsumed|default(0) }}g / {{ proteinTarget }}g</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" style="width: {{ proteinPercentage }}%;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="macro-item mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Carbs</span>
+                                    <span class="fw-bold carbs-value">{{ todaysStats.carbsConsumed|default(0) }}g / {{ carbsTarget }}g</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar" style="background: #ff9f43; width: {{ carbsPercentage }}%;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="macro-item mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Fat</span>
+                                    <span class="fw-bold fat-value">{{ todaysStats.fatConsumed|default(0) }}g / {{ fatTarget }}g</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" style="width: {{ fatPercentage }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Goal Progress -->
+                    <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                        <div class="card-header bg-white border-0 p-4">
+                            <h5 class="mb-0" style="color: var(--primary-green);">Your Goal Progress</h5>
+                        </div>
+                        <div class="card-body p-4 pt-0">
+                            <div class="text-center mb-4">
+                                <span class="badge bg-success bg-opacity-10 text-success p-3 rounded-pill mb-3">
+                                    <i class="fas fa-bullseye me-2"></i>{{ userGoal|default('Weight Loss') }}
+                                </span>
+                                
+                                {% set goalAngle = goalProgress|default(0) * 3.6 %}
+                                <div class="progress-circle mx-auto mb-3" style="width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(var(--primary-green) {{ goalAngle }}deg, #e9ecef 0deg); display: flex; align-items: center; justify-content: center;">
+                                    <div style="width: 100px; height: 100px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center;">
+                                        <span class="h4 mb-0" style="color: var(--primary-green);">{{ goalProgress|default(0) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-details">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Start Weight:</span>
+                                    <span class="fw-bold">{{ startWeight|default(70) }} kg</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Current Weight:</span>
+                                    <span class="fw-bold">{{ currentWeight|default(68) }} kg</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="text-muted">Target Weight:</span>
+                                    <span class="fw-bold">{{ targetWeight|default(65) }} kg</span>
+                                </div>
+                                
+                                <a href="{{ path('app_athlete_progress') }}" class="btn btn-success w-100 rounded-pill" style="background: var(--primary-green); border: none;">
+                                    View Detailed Progress <i class="fas fa-chart-line ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- No Plan Assigned -->
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card border-0 shadow-sm text-center p-5" style="border-radius: 16px;">
+                        <div class="empty-state">
+                            <div class="mb-4">
+                                <i class="fas fa-utensils fa-4x" style="color: var(--primary-green); opacity: 0.5;"></i>
+                            </div>
+                            <h4 class="mb-3">No Nutrition Plan Assigned</h4>
+                            <p class="text-muted mb-4">You don't have a nutrition plan yet. Your coach will assign one to you soon!</p>
+                            <button class="btn btn-success rounded-pill px-5" data-bs-toggle="modal" data-bs-target="#addCustomMealModal" style="background: var(--primary-green); border: none;">
+                                Log Custom Meal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Custom Meal Modal -->
+<div class="modal fade" id="addCustomMealModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title" style="color: var(--primary-green);">Log Custom Meal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <form id="customMealForm">
+                    <div class="mb-3">
+                        <label class="form-label">Meal Name *</label>
+                        <input type="text" class="form-control" name="name" required placeholder="e.g., Chicken Salad">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="2" placeholder="What did you eat?"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Calories *</label>
+                            <input type="number" class="form-control" name="calories" required min="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Meal Time</label>
+                            <select class="form-select" name="mealTime" id="customMealTime">
+                                <option value="breakfast">Breakfast</option>
+                                <option value="lunch">Lunch</option>
+                                <option value="dinner">Dinner</option>
+                                <option value="snack">Snack</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Protein (g)</label>
+                            <input type="number" class="form-control" name="protein" min="0" placeholder="Optional">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Carbs (g)</label>
+                            <input type="number" class="form-control" name="carbs" min="0" placeholder="Optional">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Fat (g)</label>
+                            <input type="number" class="form-control" name="fat" min="0" placeholder="Optional">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Reason (Why didn't you follow the plan?)</label>
+                        <textarea class="form-control" name="reason" rows="2" placeholder="e.g., Was at a restaurant, didn't have time to cook..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Time Consumed</label>
+                        <input type="time" class="form-control" name="consumedAt" value="{{ "now"|date('H:i') }}">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success rounded-pill px-4" onclick="submitCustomMeal()" style="background: var(--primary-green); border: none;">
+                    Log Meal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+.athlete-wrapper {
+    background: #f8f9fa;
+}
+
+.avatar-circle {
+    transition: transform 0.3s;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.1);
+}
+
+.meal-card, .meal-item {
+    transition: all 0.3s;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 12px;
+}
+
+.meal-card:hover, .meal-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.water-circle, .progress-circle {
+    transition: all 0.3s;
+}
+
+.water-btn {
+    transition: all 0.3s;
+}
+
+.water-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.2);
+}
+
+.progress {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+.servings-select:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.badge.bg-success {
+    background-color: var(--primary-green) !important;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 1rem;
+    }
+    
+    .meal-item .d-flex {
+        flex-direction: column;
+    }
+    
+    .meal-item .d-flex .flex-grow-1 {
+        margin-top: 1rem;
+    }
+    
+    .water-controls .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .water-controls .btn {
+        width: 100%;
+    }
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Set meal time when opening modal from empty state
+function setMealTime(mealTime) {
+    document.getElementById('customMealTime').value = mealTime;
+}
+
+// Submit custom meal
+function submitCustomMeal() {
+    const form = document.getElementById('customMealForm');
+    const formData = new FormData(form);
+    
+    const data = {
+        name: formData.get('name'),
+        description: formData.get('description'),
+        calories: parseInt(formData.get('calories')),
+        protein: formData.get('protein') ? parseInt(formData.get('protein')) : null,
+        carbs: formData.get('carbs') ? parseInt(formData.get('carbs')) : null,
+        fat: formData.get('fat') ? parseInt(formData.get('fat')) : null,
+        mealTime: formData.get('mealTime'),
+        reason: formData.get('reason'),
+        consumedAt: formData.get('consumedAt')
+    };
+    
+    if (!data.name || !data.calories) {
+        alert('Please fill in required fields');
+        return;
+    }
+    
+    fetch('/athlete/custom-meal/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error logging custom meal');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    {% if assignedPlan %}
+    // Get target values from Twig (only if plan exists)
+    const waterTarget = {{ waterTarget|json_encode|raw }};
+    const caloriesTarget = {{ caloriesTarget|json_encode|raw }};
+    const proteinTarget = {{ proteinTarget|json_encode|raw }};
+    const carbsTarget = {{ carbsTarget|json_encode|raw }};
+    const fatTarget = {{ fatTarget|json_encode|raw }};
+    {% else %}
+    // Default values when no plan exists
+    const waterTarget = 2.5;
+    const caloriesTarget = 2000;
+    const proteinTarget = 150;
+    const carbsTarget = 200;
+    const fatTarget = 50;
+    {% endif %}
+    
+    // Meal toggling functionality
+    document.querySelectorAll('.meal-toggle').forEach(button => {
+        button.addEventListener('click', function() {
+            const mealId = this.dataset.mealId;
+            const consumed = this.dataset.consumed === 'true';
+            const servingsSelect = this.closest('.d-flex').querySelector('.servings-select');
+            const servings = servingsSelect ? parseFloat(servingsSelect.value) : 1;
+            const mealItem = this.closest('.meal-item');
+            
+            // Toggle UI immediately for better UX
+            if (consumed) {
+                this.classList.remove('btn-success');
+                this.classList.add('btn-outline-success');
+                this.dataset.consumed = 'false';
+                if (servingsSelect) {
+                    servingsSelect.disabled = true;
+                }
+                // Remove completion badge if exists
+                const badge = mealItem.querySelector('.badge.bg-success');
+                if (badge) badge.remove();
+                mealItem.style.backgroundColor = '';
+            } else {
+                this.classList.remove('btn-outline-success');
+                this.classList.add('btn-success');
+                this.dataset.consumed = 'true';
+                if (servingsSelect) {
+                    servingsSelect.disabled = false;
+                }
+                // Add completion badge
+                const nameDiv = this.closest('.d-flex').querySelector('div[style*="flex: 1"] h6');
+                if (nameDiv && !nameDiv.parentElement.querySelector('.badge.bg-success')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-success ms-2';
+                    badge.textContent = '✓ Completed';
+                    nameDiv.parentElement.appendChild(badge);
+                }
+                mealItem.style.backgroundColor = 'rgba(16, 185, 129, 0.05)';
+            }
+            
+            // Send AJAX request to update meal consumption
+            fetch(`/athlete/meal/${mealId}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ 
+                    consumed: !consumed,
+                    servings: servings
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the UI with new stats
+                    updateStats(data.stats);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    
+    // Update servings when changed
+    document.querySelectorAll('.servings-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const mealId = this.dataset.mealId;
+            const servings = parseFloat(this.value);
+            const toggleButton = this.closest('.d-flex').querySelector('.meal-toggle');
+            
+            // If meal is not consumed, don't update
+            if (toggleButton.dataset.consumed === 'false') {
+                return;
+            }
+            
+            fetch(`/athlete/meal/${mealId}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ 
+                    consumed: true,
+                    servings: servings
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateStats(data.stats);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    
+    // Delete custom meal
+    document.querySelectorAll('.delete-custom-meal').forEach(button => {
+        button.addEventListener('click', function() {
+            if (!confirm('Are you sure you want to delete this custom meal?')) {
+                return;
+            }
+            
+            const mealId = this.dataset.mealId;
+            
+            fetch(`/athlete/custom-meal/${mealId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    
+    // Water intake tracking
+    document.querySelectorAll('.water-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = parseFloat(this.dataset.amount);
+            
+            // Add to water log
+            addWaterLog(amount);
+            
+            // Update water circle
+            updateWaterIntake(amount);
+            
+            // Send AJAX request
+            fetch('/athlete/water/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ amount: amount })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateStats(data.stats);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    
+    function addWaterLog(amount) {
+        const waterLog = document.getElementById('waterLog');
+        const now = new Date();
+        const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        
+        // Remove "no logs" message if present
+        if (waterLog.children.length === 1 && waterLog.children[0].tagName === 'P') {
+            waterLog.innerHTML = '';
+        }
+        
+        const logEntry = document.createElement('div');
+        logEntry.className = 'list-group-item d-flex justify-content-between align-items-center';
+        logEntry.innerHTML = `
+            <span><i class="fas fa-tint me-2" style="color: var(--primary-green);"></i>${amount}L</span>
+            <small class="text-muted">${timeString}</small>
+        `;
+        
+        waterLog.insertBefore(logEntry, waterLog.firstChild);
+    }
+    
+    function updateWaterIntake(amount) {
+        const waterCircle = document.querySelector('.water-circle');
+        if (!waterCircle) return;
+        
+        const waterAmount = waterCircle.querySelector('span.h3');
+        const currentText = waterAmount.textContent;
+        const currentAmount = parseFloat(currentText);
+        const newAmount = currentAmount + amount;
+        
+        // Update text
+        waterAmount.textContent = newAmount.toFixed(1) + 'L';
+        
+        // Update circle
+        const percentage = (newAmount / waterTarget) * 360;
+        waterCircle.style.background = `conic-gradient(var(--primary-green) ${percentage}deg, #e9ecef 0deg)`;
+    }
+    
+    function updateStats(stats) {
+        // Update calorie progress
+        if (stats.calories) {
+            const calorieBar = document.querySelector('.progress-bar[style*="background: var(--primary-green)"]');
+            if (calorieBar) {
+                calorieBar.style.width = stats.calories.percentage + '%';
+                const calorieText = calorieBar.closest('.card-body').querySelector('h3');
+                if (calorieText) {
+                    calorieText.innerHTML = stats.calories.consumed + ' <small class="text-muted" style="font-size: 0.9rem;">/ ' + caloriesTarget + '</small>';
+                }
+            }
+        }
+        
+        // Update protein progress
+        if (stats.protein) {
+            const proteinBar = document.querySelector('.progress-bar.bg-warning');
+            if (proteinBar) {
+                proteinBar.style.width = stats.protein.percentage + '%';
+                const proteinValue = document.querySelector('.protein-value');
+                if (proteinValue) {
+                    proteinValue.textContent = stats.protein.consumed + 'g / ' + proteinTarget + 'g';
+                }
+            }
+        }
+        
+        // Update carbs progress
+        if (stats.carbs) {
+            const carbsBar = document.querySelector('.progress-bar[style*="background: #ff9f43"]');
+            if (carbsBar) {
+                carbsBar.style.width = stats.carbs.percentage + '%';
+                const carbsValue = document.querySelector('.carbs-value');
+                if (carbsValue) {
+                    carbsValue.textContent = stats.carbs.consumed + 'g / ' + carbsTarget + 'g';
+                }
+            }
+        }
+        
+        // Update fat progress
+        if (stats.fat) {
+            const fatBar = document.querySelector('.progress-bar.bg-info');
+            if (fatBar) {
+                fatBar.style.width = stats.fat.percentage + '%';
+                const fatValue = document.querySelector('.fat-value');
+                if (fatValue) {
+                    fatValue.textContent = stats.fat.consumed + 'g / ' + fatTarget + 'g';
+                }
+            }
+        }
+    }
+    
+    // Reset form when modal is closed
+    const customMealModal = document.getElementById('addCustomMealModal');
+    if (customMealModal) {
+        customMealModal.addEventListener('hidden.bs.modal', function () {
+            document.getElementById('customMealForm').reset();
+        });
+    }
+});
+</script>
+{% endblock %}

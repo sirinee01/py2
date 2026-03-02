@@ -1,0 +1,339 @@
+{# templates/athlete/nutrition_plan_view.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ nutritionPlan.name }} - Nutrition Plan{% endblock %}
+
+{% block body %}
+<div class="athlete-wrapper" style="background: #f8f9fa; min-height: 100vh;">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm px-4" style="border-bottom: 3px solid var(--primary-green);">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ path('app_athlete_dashboard') }}">
+                <span style="color: var(--primary-green); font-size: 1.8rem; font-weight: 700;">⚡</span>
+                <span class="ms-2" style="font-weight: 600; color: #1a2e35;">MyNutrition</span>
+            </a>
+            
+            <a href="{{ path('app_athlete_dashboard') }}" class="btn btn-outline-success rounded-pill">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ path('app_athlete_dashboard') }}" style="color: var(--primary-green); text-decoration: none;">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ nutritionPlan.name }}</li>
+            </ol>
+        </nav>
+
+        <!-- Plan Header -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: linear-gradient(135deg, #1a2e35 0%, #0f1e24 100%);">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="text-white mb-2">{{ nutritionPlan.name }}</h2>
+                        <p class="text-white-50 mb-3">{{ nutritionPlan.description }}</p>
+                        <div class="d-flex gap-3">
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="fas fa-clock me-2" style="color: var(--primary-green);"></i>{{ nutritionPlan.duration }} days
+                            </span>
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="fas fa-bullseye me-2" style="color: var(--primary-green);"></i>{{ nutritionPlan.objective }}
+                            </span>
+                            {% if nutritionPlan.dailyWaterIntake %}
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="fas fa-tint me-2" style="color: var(--primary-green);"></i>{{ nutritionPlan.dailyWaterIntake }}L water/day
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="stats-circle ms-auto" style="width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(var(--primary-green) {{ planProgress|default(0) * 3.6 }}deg, rgba(255,255,255,0.2) 0deg); display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 80px; height: 80px; border-radius: 50%; background: #1a2e35; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <span class="text-white h4 mb-0">{{ planProgress|default(0) }}%</span>
+                                <small class="text-white-50">complete</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Overview -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4">
+                        <h5 class="mb-0" style="color: var(--primary-green);">Weekly Meal Schedule</h5>
+                    </div>
+                    <div class="card-body p-4 pt-0">
+                        <div class="row">
+                            {% for day in 1..7 %}
+                                {% set dayMeals = nutritionPlan.getMealsByDay(day) %}
+                                <div class="col-md-3 col-lg-{% if day <= 4 %}3{% else %}2{% endif %} mb-3">
+                                    <div class="day-card p-3 {% if day == "now"|date('N') %}border-success{% endif %}" style="border: 2px solid {% if day == "now"|date('N') %}var(--primary-green){% else %}#e9ecef{% endif %}; border-radius: 12px;">
+                                        <h6 class="text-center mb-3">
+                                            {% if day == 1 %}Monday
+                                            {% elseif day == 2 %}Tuesday
+                                            {% elseif day == 3 %}Wednesday
+                                            {% elseif day == 4 %}Thursday
+                                            {% elseif day == 5 %}Friday
+                                            {% elseif day == 6 %}Saturday
+                                            {% elseif day == 7 %}Sunday
+                                            {% endif %}
+                                            {% if day == "now"|date('N') %}
+                                                <span class="badge bg-success ms-2">Today</span>
+                                            {% endif %}
+                                        </h6>
+                                        
+                                        {% if dayMeals|length > 0 %}
+                                            <div class="day-meals">
+                                                {% for meal in dayMeals %}
+                                                    <div class="day-meal-item mb-2 p-2 bg-light rounded-3" data-bs-toggle="modal" data-bs-target="#mealModal{{ meal.id }}" style="cursor: pointer;">
+                                                        <small class="d-block fw-bold">{{ meal.name }}</small>
+                                                        <small class="text-muted">{{ meal.mealTime|capitalize }} • {{ meal.calories }} cal</small>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <p class="text-muted small text-center py-3">No meals planned</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Meals Grid -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1" style="color: var(--primary-green);">All Meals in this Plan</h5>
+                            <p class="text-muted small mb-0">{{ nutritionPlan.meals|length }} meals total</p>
+                        </div>
+                        <div class="input-group" style="width: 300px;">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-0" placeholder="Search meals..." id="searchMeals">
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row" id="mealsGrid">
+                            {% for meal in nutritionPlan.meals %}
+                                <div class="col-md-4 col-lg-3 mb-4 meal-card-wrapper" data-meal-name="{{ meal.name|lower }}" data-meal-description="{{ meal.description|lower }}">
+                                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(16,185,129,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.05)';">
+                                        {% if meal.image %}
+                                            <img src="{{ asset('uploads/meals/' ~ meal.image) }}" class="card-img-top" alt="{{ meal.name }}" style="height: 150px; object-fit: cover; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                                        {% else %}
+                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                                                <i class="fas fa-utensils fa-3x" style="color: var(--primary-green); opacity: 0.5;"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-2">{{ meal.name }}</h6>
+                                            <p class="card-text small text-muted mb-3">{{ meal.description|slice(0, 60) }}...</p>
+                                            
+                                            <div class="nutrition-badges mb-3">
+                                                <span class="badge bg-primary me-1">{{ meal.calories }} cal</span>
+                                                {% if meal.protein %}<span class="badge bg-warning me-1">{{ meal.protein }}g P</span>{% endif %}
+                                                {% if meal.carbs %}<span class="badge bg-info me-1">{{ meal.carbs }}g C</span>{% endif %}
+                                                {% if meal.fat %}<span class="badge bg-secondary me-1">{{ meal.fat }}g F</span>{% endif %}
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-clock me-1" style="color: var(--primary-green);"></i>
+                                                    {{ meal.mealTime|capitalize }}
+                                                </span>
+                                                <button class="btn btn-sm btn-outline-success view-meal-details" data-meal-id="{{ meal.id }}">
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Meal Detail Modals -->
+{% for meal in nutritionPlan.meals %}
+<div class="modal fade" id="mealModal{{ meal.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title" style="color: var(--primary-green);">{{ meal.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <div class="row">
+                    {% if meal.image %}
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <img src="{{ asset('uploads/meals/' ~ meal.image) }}" alt="{{ meal.name }}" class="img-fluid rounded-3" style="border-radius: 12px;">
+                        </div>
+                    {% endif %}
+                    <div class="col-md-{% if meal.image %}6{% else %}12{% endif %}">
+                        <h6 class="fw-bold mb-3">Description</h6>
+                        <p class="text-muted mb-4">{{ meal.description }}</p>
+                        
+                        <h6 class="fw-bold mb-3">Nutrition Facts</h6>
+                        <div class="nutrition-panel bg-light p-3 rounded-3 mb-4">
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <div class="nutrition-circle mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(16,185,129,0.1); display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-bolt" style="color: var(--primary-green);"></i>
+                                    </div>
+                                    <small class="d-block fw-bold">{{ meal.calories }}</small>
+                                    <small class="text-muted">Calories</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="nutrition-circle mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,193,7,0.1); display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-dumbbell" style="color: #ffc107;"></i>
+                                    </div>
+                                    <small class="d-block fw-bold">{{ meal.protein|default(0) }}g</small>
+                                    <small class="text-muted">Protein</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="nutrition-circle mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(13,202,240,0.1); display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-bread-slice" style="color: #0dcaf0;"></i>
+                                    </div>
+                                    <small class="d-block fw-bold">{{ meal.carbs|default(0) }}g</small>
+                                    <small class="text-muted">Carbs</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="nutrition-circle mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(108,117,125,0.1); display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-oil-can" style="color: #6c757d;"></i>
+                                    </div>
+                                    <small class="d-block fw-bold">{{ meal.fat|default(0) }}g</small>
+                                    <small class="text-muted">Fat</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="fas fa-calendar me-2" style="color: var(--primary-green);"></i>
+                                Day {{ meal.dayOfWeek|default('Any') }}
+                            </span>
+                            <button class="btn btn-success rounded-pill px-4 log-meal-btn" data-meal-id="{{ meal.id }}" data-bs-dismiss="modal">
+                                <i class="fas fa-check-circle me-2"></i>Log This Meal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+.athlete-wrapper {
+    background: #f8f9fa;
+}
+
+.day-card {
+    transition: all 0.3s;
+}
+
+.day-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(16,185,129,0.15);
+}
+
+.day-meal-item {
+    transition: all 0.3s;
+}
+
+.day-meal-item:hover {
+    background: rgba(16,185,129,0.1) !important;
+}
+
+.stats-circle {
+    transition: all 0.3s;
+}
+
+.nutrition-circle {
+    transition: transform 0.3s;
+}
+
+.nutrition-circle:hover {
+    transform: scale(1.1);
+}
+
+/* Search highlight */
+.highlight {
+    background-color: rgba(16,185,129,0.2);
+    padding: 2px;
+    border-radius: 4px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('searchMeals');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            const mealCards = document.querySelectorAll('.meal-card-wrapper');
+            
+            mealCards.forEach(card => {
+                const mealName = card.dataset.mealName || '';
+                const mealDesc = card.dataset.mealDescription || '';
+                
+                if (mealName.includes(searchText) || mealDesc.includes(searchText)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Log meal functionality
+    document.querySelectorAll('.log-meal-btn, .view-meal-details').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (this.classList.contains('log-meal-btn')) {
+                const mealId = this.dataset.mealId;
+                
+                // Send AJAX request to log meal
+                fetch('/athlete/meal/log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ mealId: mealId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        alert('Meal logged successfully!');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

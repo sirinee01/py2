@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chat with {{ otherParticipant.name }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ path('app_messages_index') }}" class="btn btn-outline-secondary me-3 rounded-circle" style="width: 40px; height: 40px;">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div class="d-flex align-items-center">
+                    <div class="avatar-circle me-3" style="width: 50px; height: 50px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.2rem;">
+                        {{ otherParticipant.name|first|upper }}
+                    </div>
+                    <div>
+                        <h4 class="mb-0">{{ otherParticipant.name }}</h4>
+                        <small class="text-muted">{{ otherParticipant.roleType|capitalize }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="height: calc(100vh - 250px); display: flex; flex-direction: column;">
+                <div class="card-body overflow-auto" id="message-list" style="flex: 1; background: #f8f9fa;">
+                    {% for message in messages %}
+                        <div class="mb-3 d-flex {% if message.sender == app.user %}justify-content-end{% endif %}">
+                            <div class="message-bubble p-3 rounded-3 {% if message.sender == app.user %}bg-primary text-white{% else %}bg-white border{% endif %}" style="max-width: 70%; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                                {% if message.sender != app.user %}
+                                    <small class="fw-bold d-block mb-1" style="color: var(--primary-green);">{{ message.sender.name }}</small>
+                                {% endif %}
+                                <p class="mb-1">{{ message.content }}</p>
+                                <small class="{% if message.sender == app.user %}text-white-50{% else %}text-muted{% endif %} d-block text-end">
+                                    {{ message.createdAt|date('H:i') }}
+                                    {% if message.sender == app.user and message.isRead %}
+                                        <i class="fas fa-check-double ms-1" title="Read"></i>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted my-5">
+                            <i class="fas fa-comment-dots fa-3x mb-3"></i>
+                            <p>No messages yet. Send a message to start the conversation!</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer bg-white border-0 p-3" style="border-top: 1px solid #dee2e6;">
+                    <form id="send-message-form" class="d-flex">
+                        <input type="hidden" id="conversation-id" value="{{ conversation.id }}">
+                        <input type="text" id="message-content" class="form-control me-2" placeholder="Type your message..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary" style="background: var(--primary-green); border: none; padding: 0.5rem 1.5rem;">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.message-bubble {
+    word-wrap: break-word;
+    position: relative;
+}
+.message-bubble.bg-primary {
+    background: var(--primary-green) !important;
+}
+#message-list {
+    scroll-behavior: smooth;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('send-message-form');
+    const input = document.getElementById('message-content');
+    const messageList = document.getElementById('message-list');
+    const conversationId = document.getElementById('conversation-id').value;
+
+    // Scroll to bottom
+    messageList.scrollTop = messageList.scrollHeight;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const content = input.value.trim();
+        if (!content) return;
+
+        fetch('{{ path('app_messages_send') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ conversationId: conversationId, content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Append message
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'mb-3 d-flex justify-content-end';
+                messageDiv.innerHTML = `
+                    <div class="message-bubble p-3 rounded-3 bg-primary text-white" style="max-width: 70%;">
+                        <p class="mb-1">${data.message.content}</p>
+                        <small class="text-white-50 d-block text-end">${data.message.createdAt}</small>
+                    </div>
+                `;
+                messageList.appendChild(messageDiv);
+                messageList.scrollTop = messageList.scrollHeight;
+                input.value = '';
+            }
+        });
+    });
+
+    // Poll for new messages every 10 seconds
+    setInterval(function() {
+        location.reload();
+    }, 10000);
+});
+</script>
+{% endblock %}
