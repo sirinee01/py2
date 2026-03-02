@@ -9,6 +9,7 @@ use App\Entity\Progress;
 use App\Entity\CustomMealLog;
 use App\Repository\NutritionPlanRepository;
 use App\Repository\MealRepository;
+use App\Service\PdfGeneratorService;  // <<< AJOUTEZ CETTE LIGNE
 use App\Repository\MealConsumptionRepository;
 use App\Repository\WaterIntakeRepository;
 use App\Repository\ProgressRepository;
@@ -706,4 +707,159 @@ class AthleteController extends AbstractController
             ]
         ]);
     }
+
+    #[Route('/food-analysis', name: 'app_athlete_food_analysis')]
+    public function foodAnalysis(): Response
+    {
+        return $this->render('food_analysis/index.html.twig');
+    }
+
+    #[Route('/food-analysis-demo', name: 'app_athlete_food_analysis_demo')]
+public function foodAnalysisDemo(): Response
+{
+    return $this->render('athlete/food_analysis_demo.html.twig');
+}
+
+#[Route('/download-report', name: 'app_athlete_download_report')]
+public function downloadReport(PdfGeneratorService $pdfService): Response
+{
+    /** @var \App\Entity\User $user */
+    $user = $this->getUser();
+    
+    // Get assigned nutrition plan
+    $assignedPlan = $user->getAssignedNutritionPlan();
+    
+    // Calculate percentages
+    $dailyTarget = $assignedPlan ? $assignedPlan->calculateDailyTargets() : [
+        'calories' => 2000,
+        'protein' => 150,
+        'carbs' => 200,
+        'fat' => 50,
+        'water' => 2.5
+    ];
+    
+    $todaysStats = [
+        'caloriesConsumed' => $user->getTodaysCalories(),
+        'proteinConsumed' => $user->getTodaysProtein(),
+        'carbsConsumed' => $user->getTodaysCarbs(),
+        'fatConsumed' => $user->getTodaysFat(),
+        'waterIntake' => $user->getTodaysTotalWater()
+    ];
+    
+    // Calculate percentages
+    $caloriesTarget = $dailyTarget['calories'] ?? 2000;
+    $caloriesPercentage = $caloriesTarget > 0 ? min(100, round(($todaysStats['caloriesConsumed'] / $caloriesTarget) * 100)) : 0;
+    
+    $waterTarget = $dailyTarget['water'] ?? 2.5;
+    $waterPercentage = $waterTarget > 0 ? min(100, round(($todaysStats['waterIntake'] / $waterTarget) * 100)) : 0;
+    
+    $proteinTarget = $dailyTarget['protein'] ?? 150;
+    $proteinPercentage = $proteinTarget > 0 ? min(100, round(($todaysStats['proteinConsumed'] / $proteinTarget) * 100)) : 0;
+    
+    $carbsTarget = $dailyTarget['carbs'] ?? 200;
+    $carbsPercentage = $carbsTarget > 0 ? min(100, round(($todaysStats['carbsConsumed'] / $carbsTarget) * 100)) : 0;
+    
+    $fatTarget = $dailyTarget['fat'] ?? 50;
+    $fatPercentage = $fatTarget > 0 ? min(100, round(($todaysStats['fatConsumed'] / $fatTarget) * 100)) : 0;
+    
+    // Get today's meals
+    $todaysMeals = [];
+    if ($assignedPlan) {
+        $todaysMealsArray = $assignedPlan->getTodaysMeals();
+        
+        // Get consumed meals
+        $consumedMeals = [];
+        foreach ($user->getMealConsumptions() as $consumption) {
+            $today = new \DateTime('today');
+            $tomorrow = new \DateTime('tomorrow');
+            if ($consumption->getConsumedAt() >= $today && $consumption->getConsumedAt() < $tomorrow) {
+                $consumedMeals[$consumption->getMeal()->getId()] = true;
+            }
+        }
+        
+        // Organize meals by meal time
+        foreach ($todaysMealsArray as $meal) {
+            $mealTime = $meal->getMealTime();
+            if (!isset($todaysMeals[$mealTime])) {
+                $todaysMeals[$mealTime] = [];
+            }
+            
+            $todaysMeals[$mealTime][] = [
+                'id' => $meal->getId(),
+                'name' => $meal->getName(),
+                'description' => $meal->getDescription(),
+                'calories' => $meal->getCalories(),
+                'protein' => $meal->getProtein(),
+                'carbs' => $meal->getCarbs(),
+                'fat' => $meal->getFat(),
+                'consumed' => isset($consumedMeals[$meal->getId()]),
+                'type' => 'plan'
+            ];
+        }
+    }
+    
+    // Get water logs
+    $waterLogs = [];
+    foreach ($user->getTodaysWaterIntakes() as $intake) {
+        $waterLogs[] = [
+            'amount' => $intake->getAmount(),
+            'time' => $intake->getConsumedAt()
+        ];
+    }
+    
+    // Get progress data
+    $latestProgress = $user->getLatestProgress();
+    $onboardingProgress = $user->getOnboardingProgress();
+    
+    $startWeight = $onboardingProgress?->getWeight();
+    $currentWeight = $latestProgress?->getWeight();
+    $targetWeight = $latestProgress?->getTargetWeight();
+    $userGoal = $latestProgress?->getPrimaryGoal() ?? 'Weight Loss';
+    
+    // Calculate goal progress
+    $goalProgress = 0;
+    if ($startWeight && $currentWeight && $targetWeight) {
+        if ($targetWeight > $startWeight) {
+            $totalToGain = $targetWeight - $startWeight;
+            $gained = $currentWeight - $startWeight;
+            $goalProgress = $totalToGain > 0 ? min(100, round(($gained / $totalToGain) * 100, 1)) : 0;
+        } else {
+            $totalToLose = $startWeight - $targetWeight;
+            $lost = $startWeight - $currentWeight;
+            $goalProgress = $totalToLose > 0 ? min(100, round(($lost / $totalToLose) * 100, 1)) : 0;
+        }
+    }
+    
+    // Prepare data for PDF
+    $data = [
+        'user' => $user,
+        'assignedPlan' => $assignedPlan,
+        'dailyTarget' => $dailyTarget,
+        'todaysStats' => $todaysStats,
+        'todaysMeals' => $todaysMeals,
+        'waterLogs' => $waterLogs,
+        'startWeight' => $startWeight,
+        'currentWeight' => $currentWeight,
+        'targetWeight' => $targetWeight,
+        'userGoal' => $userGoal,
+        'goalProgress' => $goalProgress,
+        'caloriesPercentage' => $caloriesPercentage,
+        'waterPercentage' => $waterPercentage,
+        'proteinPercentage' => $proteinPercentage,
+        'carbsPercentage' => $carbsPercentage,
+        'fatPercentage' => $fatPercentage,
+        'progressEntries' => $user->getProgressEntries()
+    ];
+    
+    // Generate PDF
+    $pdfContent = $pdfService->generateNutritionReport($data);
+    
+    // Create response with PDF
+    $response = new Response($pdfContent);
+    $response->headers->set('Content-Type', 'application/pdf');
+    $response->headers->set('Content-Disposition', 'attachment; filename="nutrition_report_' . date('Y-m-d') . '.pdf"');
+    
+    return $response;
+}
+
 }

@@ -1,0 +1,197 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chat with {{ otherParticipant.name }} - Athlete{% endblock %}
+
+{% block body %}
+<div class="athlete-wrapper" style="background: #f8f9fa; min-height: 100vh;">
+    <!-- Top Navigation Bar (same as athlete dashboard) -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm px-4" style="border-bottom: 3px solid var(--primary-green);">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ path('app_athlete_dashboard') }}">
+                <span style="color: var(--primary-green); font-size: 1.8rem; font-weight: 700;">⚡</span>
+                <span class="ms-2" style="font-weight: 600; color: #1a2e35;">MyNutrition</span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3">
+                <!-- Messages Icon -->
+                <div class="position-relative">
+                    <a href="{{ path('app_messages_index') }}" class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center" 
+                       style="width: 40px; height: 40px; background: #f1f5f9; border: none;">
+                        <i class="fas fa-envelope" style="color: #475569;"></i>
+                    </a>
+                </div>
+                
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle text-dark" type="button" data-bs-toggle="dropdown">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle me-2" style="width: 40px; height: 40px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                {{ app.user.name|first|upper }}
+                            </div>
+                            <span>{{ app.user.name }}</span>
+                        </div>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ path('app_athlete_dashboard') }}"><i class="fas fa-home me-2"></i>Dashboard</a></li>
+                        <li><a class="dropdown-item" href="{{ path('app_athlete_progress') }}"><i class="fas fa-chart-line me-2"></i>Progress</a></li>
+                        <li><a class="dropdown-item" href="{{ path('app_messages_index') }}"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Conversation Header -->
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ path('app_messages_index') }}" class="btn btn-outline-secondary rounded-circle me-3" style="width: 40px; height: 40px; border-color: #dee2e6;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="d-flex align-items-center">
+                <div class="avatar-circle me-3" style="width: 60px; height: 60px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.5rem;">
+                    {{ otherParticipant.name|first|upper }}
+                </div>
+                <div>
+                    <h4 class="mb-1" style="color: #1a2e35;">{{ otherParticipant.name }}</h4>
+                    <p class="mb-0 text-muted">{{ otherParticipant.roleType|capitalize }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Card -->
+        <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; height: calc(100vh - 300px); display: flex; flex-direction: column;">
+            <!-- Messages Area -->
+            <div class="card-body overflow-auto p-4" id="message-list" style="flex: 1; background: #f8f9fa;">
+                {% for message in messages %}
+                    <div class="mb-4 d-flex {% if message.sender == app.user %}justify-content-end{% endif %}">
+                        <div class="message-bubble p-4 rounded-3 {% if message.sender == app.user %}bg-primary text-white{% else %}bg-white border{% endif %}" style="max-width: 70%; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            {% if message.sender != app.user %}
+                                <small class="fw-bold d-block mb-2" style="color: var(--primary-green);">{{ message.sender.name }}</small>
+                            {% endif %}
+                            <p class="mb-2" style="font-size: 1rem; line-height: 1.5;">{{ message.content }}</p>
+                            <div class="d-flex align-items-center justify-content-end gap-2">
+                                <small class="{% if message.sender == app.user %}text-white-50{% else %}text-muted{% endif %}">
+                                    {{ message.createdAt|date('H:i') }}
+                                </small>
+                                {% if message.sender == app.user and message.isRead %}
+                                    <i class="fas fa-check-double {% if message.sender == app.user %}text-white-50{% else %}text-muted{% endif %}" title="Read"></i>
+                                {% elseif message.sender == app.user %}
+                                    <i class="fas fa-check {% if message.sender == app.user %}text-white-50{% else %}text-muted{% endif %}" title="Delivered"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted my-5">
+                        <div class="empty-state">
+                            <i class="fas fa-comment-dots fa-4x text-muted mb-3"></i>
+                            <h6 class="text-muted">No messages yet</h6>
+                            <p class="text-muted small">Send a message to start the conversation!</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Message Input -->
+            <div class="card-footer bg-white border-0 p-4" style="border-top: 1px solid #dee2e6;">
+                <form id="send-message-form" class="d-flex gap-2">
+                    <input type="hidden" id="conversation-id" value="{{ conversation.id }}">
+                    <input type="text" id="message-content" class="form-control form-control-lg" placeholder="Type your message..." autocomplete="off" style="border-radius: 30px; border: 1px solid #dee2e6; padding: 0.75rem 1.5rem;">
+                    <button type="submit" class="btn btn-success rounded-circle" style="width: 50px; height: 50px; background: var(--primary-green); border: none;">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+.athlete-wrapper {
+    background: #f8f9fa;
+}
+
+.avatar-circle {
+    transition: transform 0.3s;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.1);
+}
+
+.message-bubble {
+    word-wrap: break-word;
+    position: relative;
+    border-radius: 18px !important;
+}
+
+.message-bubble.bg-primary {
+    background: var(--primary-green) !important;
+    border-bottom-right-radius: 4px !important;
+}
+
+.message-bubble.bg-white {
+    border-bottom-left-radius: 4px !important;
+}
+
+#message-list {
+    scroll-behavior: smooth;
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('send-message-form');
+    const input = document.getElementById('message-content');
+    const messageList = document.getElementById('message-list');
+    const conversationId = document.getElementById('conversation-id').value;
+
+    // Scroll to bottom
+    messageList.scrollTop = messageList.scrollHeight;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const content = input.value.trim();
+        if (!content) return;
+
+        fetch('{{ path('app_messages_send') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ conversationId: conversationId, content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Append message
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'mb-4 d-flex justify-content-end';
+                messageDiv.innerHTML = `
+                    <div class="message-bubble p-4 rounded-3 bg-primary text-white" style="max-width: 70%;">
+                        <p class="mb-2">${data.message.content}</p>
+                        <div class="d-flex align-items-center justify-content-end gap-2">
+                            <small class="text-white-50">${data.message.createdAt}</small>
+                            <i class="fas fa-check text-white-50" title="Sent"></i>
+                        </div>
+                    </div>
+                `;
+                messageList.appendChild(messageDiv);
+                messageList.scrollTop = messageList.scrollHeight;
+                input.value = '';
+            }
+        });
+    });
+
+    // Poll for new messages every 5 seconds
+    setInterval(function() {
+        location.reload();
+    }, 5000);
+});
+</script>
+{% endblock %}

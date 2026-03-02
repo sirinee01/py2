@@ -188,11 +188,24 @@ class CoachController extends AbstractController
                 }
             }
             
-            // Explicitly handle nutrition plans to ensure they're saved
+            // Get selected plans before adding meal
             $selectedPlans = $form->get('nutritionPlans')->getData();
+            
+            // Add meal to selected plans
             foreach ($selectedPlans as $plan) {
                 if (!$meal->getNutritionPlans()->contains($plan)) {
                     $meal->addNutritionPlan($plan);
+                    
+                    // Update the plan's targets by adding this meal's values
+                    $currentCalories = $plan->getTargetCalories() ?? 0;
+                    $currentProtein = $plan->getTargetProtein() ?? 0;
+                    $currentCarbs = $plan->getTargetCarbs() ?? 0;
+                    $currentFat = $plan->getTargetFat() ?? 0;
+                    
+                    $plan->setTargetCalories($currentCalories + $meal->getCalories());
+                    $plan->setTargetProtein($currentProtein + ($meal->getProtein() ?? 0));
+                    $plan->setTargetCarbs($currentCarbs + ($meal->getCarbs() ?? 0));
+                    $plan->setTargetFat($currentFat + ($meal->getFat() ?? 0));
                 }
             }
             
@@ -217,6 +230,12 @@ class CoachController extends AbstractController
         if ($meal->getCoach() !== $this->getUser()) {
             throw $this->createAccessDeniedException('You cannot edit this meal.');
         }
+        
+        // Store original values before potential changes
+        $originalCalories = $meal->getCalories();
+        $originalProtein = $meal->getProtein() ?? 0;
+        $originalCarbs = $meal->getCarbs() ?? 0;
+        $originalFat = $meal->getFat() ?? 0;
         
         $form = $this->createForm(MealType::class, $meal, [
             'coach' => $this->getUser()
@@ -253,20 +272,77 @@ class CoachController extends AbstractController
                 $meal->setImage($newFilename);
             }
             
-            // Explicitly handle nutrition plans to ensure they're saved correctly
-            $selectedPlans = $form->get('nutritionPlans')->getData();
+            // Get current plans
+            $currentPlans = [];
+            foreach ($meal->getNutritionPlans() as $plan) {
+                $currentPlans[$plan->getId()] = $plan;
+            }
             
-            // Remove plans that are no longer selected
-            foreach ($meal->getNutritionPlans() as $existingPlan) {
-                if (!$selectedPlans->contains($existingPlan)) {
-                    $meal->removeNutritionPlan($existingPlan);
+            // Get newly selected plans
+            $selectedPlans = $form->get('nutritionPlans')->getData();
+            $selectedPlanIds = [];
+            
+            // Handle removals
+            foreach ($currentPlans as $planId => $plan) {
+                if (!$selectedPlans->contains($plan)) {
+                    // Meal removed from this plan - subtract original values
+                    $currentCalories = $plan->getTargetCalories() ?? 0;
+                    $currentProtein = $plan->getTargetProtein() ?? 0;
+                    $currentCarbs = $plan->getTargetCarbs() ?? 0;
+                    $currentFat = $plan->getTargetFat() ?? 0;
+                    
+                    $plan->setTargetCalories(max(0, $currentCalories - $originalCalories));
+                    $plan->setTargetProtein(max(0, $currentProtein - $originalProtein));
+                    $plan->setTargetCarbs(max(0, $currentCarbs - $originalCarbs));
+                    $plan->setTargetFat(max(0, $currentFat - $originalFat));
+                    
+                    $meal->removeNutritionPlan($plan);
                 }
             }
             
-            // Add newly selected plans
+            // Handle additions
             foreach ($selectedPlans as $plan) {
-                if (!$meal->getNutritionPlans()->contains($plan)) {
+                $selectedPlanIds[] = $plan->getId();
+                
+                if (!isset($currentPlans[$plan->getId()])) {
+                    // New plan added - add new values
                     $meal->addNutritionPlan($plan);
+                    
+                    $currentCalories = $plan->getTargetCalories() ?? 0;
+                    $currentProtein = $plan->getTargetProtein() ?? 0;
+                    $currentCarbs = $plan->getTargetCarbs() ?? 0;
+                    $currentFat = $plan->getTargetFat() ?? 0;
+                    
+                    $plan->setTargetCalories($currentCalories + $meal->getCalories());
+                    $plan->setTargetProtein($currentProtein + ($meal->getProtein() ?? 0));
+                    $plan->setTargetCarbs($currentCarbs + ($meal->getCarbs() ?? 0));
+                    $plan->setTargetFat($currentFat + ($meal->getFat() ?? 0));
+                }
+            }
+            
+            // Check if meal values changed for plans that still have this meal
+            $newCalories = $meal->getCalories();
+            $newProtein = $meal->getProtein() ?? 0;
+            $newCarbs = $meal->getCarbs() ?? 0;
+            $newFat = $meal->getFat() ?? 0;
+            
+            $caloriesDiff = $newCalories - $originalCalories;
+            $proteinDiff = $newProtein - $originalProtein;
+            $carbsDiff = $newCarbs - $originalCarbs;
+            $fatDiff = $newFat - $originalFat;
+            
+            // Update plans that still contain this meal
+            foreach ($selectedPlans as $plan) {
+                if (isset($currentPlans[$plan->getId()]) || in_array($plan->getId(), $selectedPlanIds)) {
+                    $currentCalories = $plan->getTargetCalories() ?? 0;
+                    $currentProtein = $plan->getTargetProtein() ?? 0;
+                    $currentCarbs = $plan->getTargetCarbs() ?? 0;
+                    $currentFat = $plan->getTargetFat() ?? 0;
+                    
+                    $plan->setTargetCalories($currentCalories + $caloriesDiff);
+                    $plan->setTargetProtein($currentProtein + $proteinDiff);
+                    $plan->setTargetCarbs($currentCarbs + $carbsDiff);
+                    $plan->setTargetFat($currentFat + $fatDiff);
                 }
             }
             
@@ -280,6 +356,49 @@ class CoachController extends AbstractController
             'form' => $form->createView(),
             'meal' => $meal,
         ]);
+    }
+
+    #[Route('/coach/meal/{id}/delete', name: 'app_coach_meal_delete')]
+    public function deleteMeal(Request $request, Meal $meal, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COACH');
+        
+        // Check if the coach owns this meal
+        if ($meal->getCoach() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('You cannot delete this meal.');
+        }
+        
+        if ($this->isCsrfTokenValid('delete'.$meal->getId(), $request->request->get('_token'))) {
+            // Before deletion, update all plans that contain this meal
+            foreach ($meal->getNutritionPlans() as $plan) {
+                $currentCalories = $plan->getTargetCalories() ?? 0;
+                $currentProtein = $plan->getTargetProtein() ?? 0;
+                $currentCarbs = $plan->getTargetCarbs() ?? 0;
+                $currentFat = $plan->getTargetFat() ?? 0;
+                
+                $plan->setTargetCalories(max(0, $currentCalories - $meal->getCalories()));
+                $plan->setTargetProtein(max(0, $currentProtein - ($meal->getProtein() ?? 0)));
+                $plan->setTargetCarbs(max(0, $currentCarbs - ($meal->getCarbs() ?? 0)));
+                $plan->setTargetFat(max(0, $currentFat - ($meal->getFat() ?? 0)));
+            }
+            
+            // Delete image file if exists
+            if ($meal->getImage()) {
+                $imagePath = $this->getParameter('meals_directory').'/'.$meal->getImage();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+            
+            $entityManager->remove($meal);
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'Meal deleted successfully!');
+        } else {
+            $this->addFlash('error', 'Invalid CSRF token.');
+        }
+        
+        return $this->redirectToRoute('app_coach_dashboard');
     }
 
     #[Route('/coach/nutrition-plan/{id}', name: 'app_coach_nutrition_plan_view')]
@@ -312,36 +431,6 @@ class CoachController extends AbstractController
             $entityManager->flush();
             
             $this->addFlash('success', 'Nutrition plan deleted successfully!');
-        } else {
-            $this->addFlash('error', 'Invalid CSRF token.');
-        }
-        
-        return $this->redirectToRoute('app_coach_dashboard');
-    }
-
-    #[Route('/coach/meal/{id}/delete', name: 'app_coach_meal_delete')]
-    public function deleteMeal(Request $request, Meal $meal, EntityManagerInterface $entityManager): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_COACH');
-        
-        // Check if the coach owns this meal
-        if ($meal->getCoach() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('You cannot delete this meal.');
-        }
-        
-        if ($this->isCsrfTokenValid('delete'.$meal->getId(), $request->request->get('_token'))) {
-            // Delete image file if exists
-            if ($meal->getImage()) {
-                $imagePath = $this->getParameter('meals_directory').'/'.$meal->getImage();
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
-                }
-            }
-            
-            $entityManager->remove($meal);
-            $entityManager->flush();
-            
-            $this->addFlash('success', 'Meal deleted successfully!');
         } else {
             $this->addFlash('error', 'Invalid CSRF token.');
         }

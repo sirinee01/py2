@@ -1,0 +1,490 @@
+{# templates/athlete/food_analysis_demo.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Food Analysis Demo - Athlete{% endblock %}
+
+{% block body %}
+<div class="athlete-wrapper" style="background: #f8f9fa; min-height: 100vh;">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm px-4" style="border-bottom: 3px solid var(--primary-green);">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ path('app_athlete_dashboard') }}">
+                <span style="color: var(--primary-green); font-size: 1.8rem; font-weight: 700;">⚡</span>
+                <span class="ms-2" style="font-weight: 600; color: #1a2e35;">MyNutrition</span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle text-dark" type="button" data-bs-toggle="dropdown">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle me-2" style="width: 40px; height: 40px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                {{ app.user.name|first|upper }}
+                            </div>
+                            <span>{{ app.user.name }}</span>
+                        </div>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ path('app_athlete_dashboard') }}"><i class="fas fa-home me-2"></i>Dashboard</a></li>
+                        <li><a class="dropdown-item" href="{{ path('app_athlete_progress') }}"><i class="fas fa-chart-line me-2"></i>Progress</a></li>
+                        <li><a class="dropdown-item" href="{{ path('app_messages_index') }}"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ path('app_athlete_dashboard') }}" class="btn btn-outline-secondary rounded-circle me-3" style="width: 40px; height: 40px;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="mb-1" style="color: #1a2e35;">Food Analysis Demo</h2>
+                <p class="text-muted">Upload a photo to analyze nutritional content</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <!-- Upload Card -->
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <div id="preview-container" style="display: none;" class="mb-4">
+                                <img id="image-preview" class="img-fluid rounded" style="max-height: 300px; border: 2px solid #e9ecef;">
+                            </div>
+                            
+                            <div id="upload-placeholder" class="py-5" style="background: #f8f9fa; border-radius: 12px; border: 2px dashed #dee2e6;">
+                                <i class="fas fa-cloud-upload-alt fa-4x mb-3" style="color: var(--primary-green); opacity: 0.5;"></i>
+                                <h5 class="mb-2">Upload Food Image</h5>
+                                <p class="text-muted small mb-3">Click to browse or drag and drop</p>
+                                <button class="btn btn-success rounded-pill px-4" onclick="document.getElementById('image-input').click();" style="background: var(--primary-green); border: none;">
+                                    <i class="fas fa-camera me-2"></i>Choose Image
+                                </button>
+                                <input type="file" id="image-input" accept="image/*" style="display: none;">
+                            </div>
+                        </div>
+
+                        <!-- Loading Progress -->
+                        <div id="loading-progress" style="display: none;" class="text-center py-4">
+                            <div class="spinner-border text-success mb-3" role="status" style="color: var(--primary-green) !important;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h6>Analyzing your food...</h6>
+                            <p class="text-muted small">This may take a few seconds</p>
+                        </div>
+
+                        <!-- Sample Foods (Quick Select) -->
+                        <div class="mt-4">
+                            <h6 class="mb-3">Or try a sample food:</h6>
+                            <div class="row g-2">
+                                <div class="col-6 col-md-3">
+                                    <button class="btn btn-outline-success w-100 sample-food" data-food="pizza">
+                                        <i class="fas fa-pizza-slice me-2"></i>Pizza
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <button class="btn btn-outline-success w-100 sample-food" data-food="salad">
+                                        <i class="fas fa-leaf me-2"></i>Salad
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <button class="btn btn-outline-success w-100 sample-food" data-food="burger">
+                                        <i class="fas fa-hamburger me-2"></i>Burger
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <button class="btn btn-outline-success w-100 sample-food" data-food="apple">
+                                        <i class="fas fa-apple-alt me-2"></i>Apple
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Result Card -->
+                <div id="result-card" class="card border-0 shadow-sm" style="border-radius: 16px; display: none;">
+                    <div class="card-header bg-white border-0 p-4">
+                        <h5 class="mb-0" style="color: var(--primary-green);">
+                            <i class="fas fa-robot me-2"></i>Analysis Result
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <span class="badge bg-success bg-opacity-10 text-success p-3 rounded-pill" id="food-name-display">
+                                🍕 Margherita Pizza
+                            </span>
+                        </div>
+
+                        <!-- Nutritional Info -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-6 col-md-3">
+                                <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                    <i class="fas fa-fire mb-2" style="color: #ff6b6b; font-size: 1.5rem;"></i>
+                                    <h4 class="mb-1" id="calories-display">285</h4>
+                                    <small class="text-muted">Calories</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                    <i class="fas fa-dumbbell mb-2" style="color: #4ecdc4; font-size: 1.5rem;"></i>
+                                    <h4 class="mb-1" id="protein-display">12</h4>
+                                    <small class="text-muted">Protein (g)</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                    <i class="fas fa-bread-slice mb-2" style="color: #ffb347; font-size: 1.5rem;"></i>
+                                    <h4 class="mb-1" id="carbs-display">36</h4>
+                                    <small class="text-muted">Carbs (g)</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                    <i class="fas fa-oil-can mb-2" style="color: #a0d6b4; font-size: 1.5rem;"></i>
+                                    <h4 class="mb-1" id="fat-display">10</h4>
+                                    <small class="text-muted">Fat (g)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Info -->
+                        <div class="mb-4 p-3" style="background: #f8f9fa; border-radius: 12px;">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Serving Size:</span>
+                                <span class="fw-bold" id="serving-display">1 slice (100g)</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Confidence:</span>
+                                <span class="fw-bold" id="confidence-display">98%</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Health Score:</span>
+                                <span class="fw-bold text-success" id="health-score">B+</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success flex-grow-1 rounded-pill" onclick="addToMeal()" style="background: var(--primary-green); border: none;">
+                                <i class="fas fa-plus-circle me-2"></i>Add to Today's Meals
+                            </button>
+                            <button class="btn btn-outline-secondary rounded-pill" onclick="resetAnalysis()">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+
+                        <!-- Meal Time Selector (shown when adding) -->
+                        <div id="meal-time-selector" style="display: none;" class="mt-3">
+                            <label class="form-label">Select meal time:</label>
+                            <div class="d-flex gap-2">
+                                <select class="form-select" id="meal-time-select">
+                                    <option value="breakfast">Breakfast</option>
+                                    <option value="lunch">Lunch</option>
+                                    <option value="dinner">Dinner</option>
+                                    <option value="snack">Snack</option>
+                                </select>
+                                <button class="btn btn-success" onclick="confirmAddToMeal()">Confirm</button>
+                                <button class="btn btn-light" onclick="cancelAddToMeal()">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Analyses -->
+                <div class="card border-0 shadow-sm mt-4" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4">
+                        <h5 class="mb-0" style="color: var(--primary-green);">Recent Analyses</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex align-items-center p-4">
+                                <div style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                    <i class="fas fa-pizza-slice" style="color: var(--primary-green);"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">Margherita Pizza</h6>
+                                    <small class="text-muted">285 cal • 12g P • 36g C • 10g F</small>
+                                </div>
+                                <small class="text-muted">2 hours ago</small>
+                            </div>
+                            <div class="list-group-item d-flex align-items-center p-4">
+                                <div style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                    <i class="fas fa-leaf" style="color: var(--primary-green);"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">Caesar Salad</h6>
+                                    <small class="text-muted">180 cal • 8g P • 12g C • 14g F</small>
+                                </div>
+                                <small class="text-muted">Yesterday</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="border-left: 4px solid var(--primary-green);">
+        <div class="toast-header">
+            <i class="fas fa-check-circle me-2" style="color: var(--primary-green);"></i>
+            <strong class="me-auto">Success</strong>
+            <small>just now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Meal added to your log!
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-green: #10b981;
+}
+
+.athlete-wrapper {
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+.avatar-circle {
+    transition: transform 0.3s;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.1);
+}
+
+.btn-outline-success {
+    color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.sample-food {
+    transition: all 0.3s;
+}
+
+.sample-food:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+#image-preview {
+    transition: all 0.3s;
+}
+
+.toast {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Sample food database (demo data)
+const foodDatabase = {
+    pizza: {
+        name: 'Margherita Pizza',
+        calories: 285,
+        protein: 12,
+        carbs: 36,
+        fat: 10,
+        serving: '1 slice (100g)',
+        confidence: 98,
+        healthScore: 'B+',
+        icon: 'fa-pizza-slice'
+    },
+    salad: {
+        name: 'Caesar Salad',
+        calories: 180,
+        protein: 8,
+        carbs: 12,
+        fat: 14,
+        serving: '1 bowl (200g)',
+        confidence: 95,
+        healthScore: 'A-',
+        icon: 'fa-leaf'
+    },
+    burger: {
+        name: 'Classic Beef Burger',
+        calories: 520,
+        protein: 28,
+        carbs: 42,
+        fat: 26,
+        serving: '1 burger (250g)',
+        confidence: 92,
+        healthScore: 'C+',
+        icon: 'fa-hamburger'
+    },
+    apple: {
+        name: 'Fresh Apple',
+        calories: 95,
+        protein: 0.5,
+        carbs: 25,
+        fat: 0.3,
+        serving: '1 medium (182g)',
+        confidence: 99,
+        healthScore: 'A+',
+        icon: 'fa-apple-alt'
+    },
+    chicken: {
+        name: 'Grilled Chicken Breast',
+        calories: 165,
+        protein: 31,
+        carbs: 0,
+        fat: 3.6,
+        serving: '100g',
+        confidence: 97,
+        healthScore: 'A',
+        icon: 'fa-drumstick-bite'
+    },
+    pasta: {
+        name: 'Spaghetti Bolognese',
+        calories: 380,
+        protein: 18,
+        carbs: 52,
+        fat: 12,
+        serving: '1 plate (300g)',
+        confidence: 90,
+        healthScore: 'B',
+        icon: 'fa-utensils'
+    }
+};
+
+let currentFoodData = null;
+
+// Handle file input
+document.getElementById('image-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('image-preview').src = e.target.result;
+            document.getElementById('preview-container').style.display = 'block';
+            document.getElementById('upload-placeholder').style.display = 'none';
+        }
+        reader.readAsDataURL(file);
+        
+        // Simulate analysis
+        simulateAnalysis('pizza'); // Default to pizza for demo
+    }
+});
+
+// Sample food buttons
+document.querySelectorAll('.sample-food').forEach(button => {
+    button.addEventListener('click', function() {
+        const food = this.dataset.food;
+        simulateAnalysis(food);
+    });
+});
+
+function simulateAnalysis(foodKey) {
+    // Hide upload section, show loading
+    document.getElementById('upload-placeholder').style.display = 'none';
+    document.getElementById('preview-container').style.display = 'none';
+    document.getElementById('loading-progress').style.display = 'block';
+    document.getElementById('result-card').style.display = 'none';
+    
+    // Simulate API delay
+    setTimeout(() => {
+        const foodData = foodDatabase[foodKey] || foodDatabase.pizza;
+        currentFoodData = foodData;
+        
+        // Update display
+        document.getElementById('food-name-display').innerHTML = `<i class="fas ${foodData.icon} me-2"></i>${foodData.name}`;
+        document.getElementById('calories-display').textContent = foodData.calories;
+        document.getElementById('protein-display').textContent = foodData.protein;
+        document.getElementById('carbs-display').textContent = foodData.carbs;
+        document.getElementById('fat-display').textContent = foodData.fat;
+        document.getElementById('serving-display').textContent = foodData.serving;
+        document.getElementById('confidence-display').textContent = foodData.confidence + '%';
+        document.getElementById('health-score').textContent = foodData.healthScore;
+        
+        // Hide loading, show result
+        document.getElementById('loading-progress').style.display = 'none';
+        document.getElementById('result-card').style.display = 'block';
+        
+        // Scroll to result
+        document.getElementById('result-card').scrollIntoView({ behavior: 'smooth' });
+    }, 2000);
+}
+
+function resetAnalysis() {
+    document.getElementById('result-card').style.display = 'none';
+    document.getElementById('loading-progress').style.display = 'none';
+    document.getElementById('preview-container').style.display = 'none';
+    document.getElementById('upload-placeholder').style.display = 'block';
+    document.getElementById('image-input').value = '';
+    document.getElementById('meal-time-selector').style.display = 'none';
+}
+
+function addToMeal() {
+    document.getElementById('meal-time-selector').style.display = 'block';
+}
+
+function cancelAddToMeal() {
+    document.getElementById('meal-time-selector').style.display = 'none';
+}
+
+function confirmAddToMeal() {
+    const mealTime = document.getElementById('meal-time-select').value;
+    const foodData = currentFoodData || foodDatabase.pizza;
+    
+    // Create custom meal object
+    const customMeal = {
+        name: foodData.name,
+        calories: foodData.calories,
+        protein: foodData.protein,
+        carbs: foodData.carbs,
+        fat: foodData.fat,
+        mealTime: mealTime,
+        description: `Analyzed with AI - ${foodData.serving}`,
+        reason: 'AI Food Analysis'
+    };
+    
+    // Store in localStorage
+    let recentAnalyses = JSON.parse(localStorage.getItem('recentFoodAnalyses') || '[]');
+    recentAnalyses.unshift({
+        ...customMeal,
+        timestamp: new Date().toISOString()
+    });
+    recentAnalyses = recentAnalyses.slice(0, 5); // Keep only last 5
+    localStorage.setItem('recentFoodAnalyses', JSON.stringify(recentAnalyses));
+    
+    // Show success toast
+    const toast = new bootstrap.Toast(document.getElementById('successToast'));
+    toast.show();
+    
+    // Hide selector
+    document.getElementById('meal-time-selector').style.display = 'none';
+    
+    // Optionally redirect back to dashboard
+    setTimeout(() => {
+        window.location.href = '{{ path('app_athlete_dashboard') }}';
+    }, 1500);
+}
+
+// Load recent analyses from localStorage on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const recentAnalyses = JSON.parse(localStorage.getItem('recentFoodAnalyses') || '[]');
+    // You could populate the recent analyses list here if needed
+});
+</script>
+{% endblock %}

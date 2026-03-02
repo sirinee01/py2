@@ -12,7 +12,14 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-
+    
+    App\Service\FoodCalorieService:
+        arguments:
+            $apiKey: '%env(CALORIE_MAMA_API_KEY)%'
+            $apiUrl: '%env(CALORIE_MAMA_API_URL)%'
+    App\Service\PdfGeneratorService:
+        arguments:
+            $twig: '@twig'
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:

@@ -57,11 +57,22 @@ class MessageController extends AbstractController
             return !in_array($availableUser->getId(), $usersWithConversations) && $availableUser->getId() !== $user->getId();
         });
 
-        return $this->render('message/index.html.twig', [
-            'conversations' => $conversations,
-            'availableUsers' => $availableUsers,
-            'user' => $user,
-        ]);
+        // Choose template based on user role
+        if (in_array('ROLE_COACH', $user->getRoles())) {
+            // Coach template with sidebar
+            return $this->render('message/index.html.twig', [
+                'conversations' => $conversations,
+                'availableUsers' => $availableUsers,
+                'user' => $user,
+            ]);
+        } else {
+            // Athlete template with navbar
+            return $this->render('message/athlete_index.html.twig', [
+                'conversations' => $conversations,
+                'availableUsers' => $availableUsers,
+                'user' => $user,
+            ]);
+        }
     }
 
     #[Route('/conversation/{id}', name: 'app_messages_conversation')]
@@ -83,11 +94,22 @@ class MessageController extends AbstractController
 
         $otherParticipant = $conversation->getOtherParticipant($user);
 
-        return $this->render('message/conversation.html.twig', [
-            'conversation' => $conversation,
-            'otherParticipant' => $otherParticipant,
-            'messages' => $conversation->getMessages(),
-        ]);
+        // Choose template based on user role
+        if (in_array('ROLE_COACH', $user->getRoles())) {
+            // Coach template with sidebar
+            return $this->render('message/conversation.html.twig', [
+                'conversation' => $conversation,
+                'otherParticipant' => $otherParticipant,
+                'messages' => $conversation->getMessages(),
+            ]);
+        } else {
+            // Athlete template with navbar
+            return $this->render('message/athlete_conversation.html.twig', [
+                'conversation' => $conversation,
+                'otherParticipant' => $otherParticipant,
+                'messages' => $conversation->getMessages(),
+            ]);
+        }
     }
 
     #[Route('/start/{userId}', name: 'app_messages_start')]
